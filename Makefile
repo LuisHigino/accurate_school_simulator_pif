@@ -2,11 +2,11 @@ EXEC = accurateschoolsimulator
 
 # Compilador e flags
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -I/usr/local/include -g
+CFLAGS = -Wall -Wextra -std=c99 -I./GAME -I/usr/local/include -g
 LDFLAGS = -L/usr/local/lib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
-# Encontra todos os arquivos .c na pasta atual
-SRC = $(wildcard *.c)
+# Encontra todos os arquivos .c da pasta do jogo
+SRC = $(wildcard GAME/*.c)
 # Substitui a extensão .c por .o para gerar os objetos
 OBJ = $(SRC:.c=.o)
 
@@ -26,5 +26,5 @@ clean:
 	rm -f $(OBJ) $(EXEC)
 
 # Regra para compilar e rodar o jogo de uma vez só
-run: all
+run: $(EXEC)
 	./$(EXEC)
