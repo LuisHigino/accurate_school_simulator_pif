@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "abelha.h"
 
 int main(void)
 {
@@ -6,69 +7,33 @@ int main(void)
     const int screenHeight = 797;
 
     InitWindow(screenWidth, screenHeight, "Gnomo VS Aliens");
-
     SetTargetFPS(60);
 
-    // =========================
-    // FAIXAS
-    // =========================
+    bool jogoComecou = false;
 
-    int cima = 250;
     int meio = 400;
     int baixo = 550;
-
-    // =========================
-    // PLAYER
-    // =========================
-
-    int faixa = 1;
-
-    int playerX = 120;
-    int playerY = meio;
-
-    // =========================
-    // JOGO
-    // =========================
-
-    bool jogoComecou = false;
+    int cima = 250;
 
     // =========================
     // BACKGROUND
     // =========================
 
     Texture2D background = LoadTexture("background.jpg");
-
     SetTextureFilter(background, TEXTURE_FILTER_POINT);
 
     // =========================
+    // ABELHA
+    // =========================
+
+    Texture2D texturaAbelha = LoadTexture("gnomo_jetpack1.png");
+    SetTextureFilter(texturaAbelha, TEXTURE_FILTER_POINT);
+
+    Abelha abelha;
+    InitAbelha(&abelha, texturaAbelha, 1);
+
+    // =========================
     // INIMIGOS
-    // =========================
-
-    int inimigo1X = screenWidth + 100;
-    int inimigo1Y = meio;
-
-    int inimigo2X = screenWidth + 500;
-    int inimigo2Y = baixo;
-
-    int velocidadeInimigo = 15;
-
-    // =========================
-    // GNOMO
-    // =========================
-
-    Texture2D gnomo1 = LoadTexture("gnomo_jetpack1.png");
-    Texture2D gnomo2 = LoadTexture("gnomo_jetpack2.png");
-    Texture2D gnomo3 = LoadTexture("gnomo_jetpack3.png");
-
-    SetTextureFilter(gnomo1, TEXTURE_FILTER_POINT);
-    SetTextureFilter(gnomo2, TEXTURE_FILTER_POINT);
-    SetTextureFilter(gnomo3, TEXTURE_FILTER_POINT);
-
-    int frameAtual = 0;
-    int timerAnimacao = 0;
-
-    // =========================
-    // ETS
     // =========================
 
     Texture2D et1 = LoadTexture("et1.png");
@@ -82,6 +47,14 @@ int main(void)
     int frameEtAtual = 0;
     int timerEtAnimacao = 0;
 
+    int inimigo1X = screenWidth + 100;
+    int inimigo1Y = meio;
+
+    int inimigo2X = screenWidth + 500;
+    int inimigo2Y = baixo;
+
+    int velocidadeInimigo = 15;
+
     while (!WindowShouldClose())
     {
         // =========================
@@ -94,47 +67,16 @@ int main(void)
         }
 
         // =========================
-        // MOVIMENTO PLAYER
+        // ABELHA
         // =========================
 
         if (jogoComecou)
         {
-            if (IsKeyPressed(KEY_UP))
-            {
-                if (faixa > 0)
-                {
-                    faixa--;
-                }
-            }
-
-            if (IsKeyPressed(KEY_DOWN))
-            {
-                if (faixa < 2)
-                {
-                    faixa++;
-                }
-            }
+            AtualizarAbelha(&abelha, GetFrameTime());
         }
 
         // =========================
-        // POSIÇÃO PLAYER
-        // =========================
-
-        if (faixa == 0)
-        {
-            playerY = cima;
-        }
-        else if (faixa == 1)
-        {
-            playerY = meio;
-        }
-        else
-        {
-            playerY = baixo;
-        }
-
-        // =========================
-        // MOVIMENTO INIMIGOS
+        // INIMIGOS
         // =========================
 
         if (jogoComecou)
@@ -142,62 +84,37 @@ int main(void)
             inimigo1X -= velocidadeInimigo;
             inimigo2X -= velocidadeInimigo;
 
-            // INIMIGO 1
             if (inimigo1X < -100)
             {
                 inimigo1X = screenWidth + GetRandomValue(200, 500);
 
-                int faixaInimigo = GetRandomValue(0, 2);
+                int faixa = GetRandomValue(0, 2);
 
-                if (faixaInimigo == 0)
-                {
+                if (faixa == 0)
                     inimigo1Y = cima;
-                }
-                else if (faixaInimigo == 1)
-                {
+                else if (faixa == 1)
                     inimigo1Y = meio;
-                }
                 else
-                {
                     inimigo1Y = baixo;
-                }
             }
 
-            // INIMIGO 2
             if (inimigo2X < -100)
             {
                 inimigo2X = screenWidth + GetRandomValue(200, 500);
 
-                int faixaInimigo = GetRandomValue(0, 2);
+                int faixa = GetRandomValue(0, 2);
 
-                if (faixaInimigo == 0)
-                {
+                if (faixa == 0)
                     inimigo2Y = cima;
-                }
-                else if (faixaInimigo == 1)
-                {
+                else if (faixa == 1)
                     inimigo2Y = meio;
-                }
                 else
-                {
                     inimigo2Y = baixo;
-                }
             }
         }
 
         // =========================
-        // HITBOX PLAYER
-        // =========================
-
-        Rectangle playerRect = {
-            playerX + 10,
-            playerY - 22,
-            40,
-            40
-        };
-
-        // =========================
-        // HITBOX INIMIGO 1
+        // HITBOX
         // =========================
 
         Rectangle inimigo1Rect = {
@@ -206,10 +123,6 @@ int main(void)
             40,
             40
         };
-
-        // =========================
-        // HITBOX INIMIGO 2
-        // =========================
 
         Rectangle inimigo2Rect = {
             inimigo2X - 20,
@@ -222,35 +135,16 @@ int main(void)
         // COLISÃO
         // =========================
 
-        if (CheckCollisionRecs(playerRect, inimigo1Rect) ||
-            CheckCollisionRecs(playerRect, inimigo2Rect))
+        if (CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo1Rect) ||
+            CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo2Rect))
         {
             jogoComecou = false;
-
-            faixa = 1;
 
             inimigo1X = screenWidth + 100;
             inimigo1Y = meio;
 
             inimigo2X = screenWidth + 500;
             inimigo2Y = baixo;
-        }
-
-        // =========================
-        // ANIMAÇÃO GNOMO
-        // =========================
-
-        timerAnimacao++;
-
-        if (timerAnimacao > 10)
-        {
-            frameAtual++;
-            timerAnimacao = 0;
-
-            if (frameAtual > 2)
-            {
-                frameAtual = 0;
-            }
         }
 
         // =========================
@@ -265,10 +159,17 @@ int main(void)
             timerEtAnimacao = 0;
 
             if (frameEtAtual > 2)
-            {
                 frameEtAtual = 0;
-            }
         }
+
+        Texture2D frameEt;
+
+        if (frameEtAtual == 0)
+            frameEt = et1;
+        else if (frameEtAtual == 1)
+            frameEt = et2;
+        else
+            frameEt = et3;
 
         // =========================
         // DESENHAR
@@ -276,35 +177,17 @@ int main(void)
 
         BeginDrawing();
 
-        // LIMPA A TELA
         ClearBackground(BLACK);
 
-        // FUNDO
-    DrawTexturePro(
-        background,
-
-        (Rectangle){
+        DrawTexturePro(
+            background,
+            (Rectangle){0, 0, background.width, background.height},
+            (Rectangle){0, 0, screenWidth, screenHeight},
+            (Vector2){0, 0},
             0,
-            0,
-            (float)background.width,
-            (float)background.height
-        },
+            WHITE
+        );
 
-        (Rectangle){
-            0,
-            0,
-            (float)screenWidth,
-            (float)screenHeight
-        },
-
-        (Vector2){0, 0},
-
-        0.0f,
-
-        WHITE
-    );
-
-        // TEXTO
         if (!jogoComecou)
         {
             DrawText(
@@ -316,113 +199,23 @@ int main(void)
             );
         }
 
-        // =========================
-        // FRAME GNOMO
-        // =========================
+        DesenharAbelha(&abelha);
 
-        Texture2D frameAtualTextura;
-
-        if (frameAtual == 0)
-        {
-            frameAtualTextura = gnomo1;
-        }
-        else if (frameAtual == 1)
-        {
-            frameAtualTextura = gnomo2;
-        }
-        else
-        {
-            frameAtualTextura = gnomo3;
-        }
-
-        // DESENHAR GNOMO
         DrawTexturePro(
-            frameAtualTextura,
-
-            (Rectangle){
-                0,
-                0,
-                frameAtualTextura.width,
-                frameAtualTextura.height
-            },
-
-            (Rectangle){
-                playerX,
-                playerY - 32,
-                64,
-                64
-            },
-
+            frameEt,
+            (Rectangle){0, 0, frameEt.width, frameEt.height},
+            (Rectangle){inimigo1X - 32, inimigo1Y - 32, 64, 64},
             (Vector2){0, 0},
-
-            0.0f,
+            0,
             WHITE
         );
 
-        // =========================
-        // FRAME ET
-        // =========================
-
-        Texture2D frameEtTextura;
-
-        if (frameEtAtual == 0)
-        {
-            frameEtTextura = et1;
-        }
-        else if (frameEtAtual == 1)
-        {
-            frameEtTextura = et2;
-        }
-        else
-        {
-            frameEtTextura = et3;
-        }
-
-        // ET 1
         DrawTexturePro(
-            frameEtTextura,
-
-            (Rectangle){
-                0,
-                0,
-                frameEtTextura.width,
-                frameEtTextura.height
-            },
-
-            (Rectangle){
-                inimigo1X - 32,
-                inimigo1Y - 32,
-                64,
-                64
-            },
-
+            frameEt,
+            (Rectangle){0, 0, frameEt.width, frameEt.height},
+            (Rectangle){inimigo2X - 32, inimigo2Y - 32, 64, 64},
             (Vector2){0, 0},
-
-            0.0f,
-            WHITE
-        );
-
-        // ET 2
-        DrawTexturePro(
-            frameEtTextura,
-
-            (Rectangle){
-                0,
-                0,
-                frameEtTextura.width,
-                frameEtTextura.height
-            },
-
-            (Rectangle){
-                inimigo2X - 32,
-                inimigo2Y - 32,
-                64,
-                64
-            },
-
-            (Vector2){0, 0},
-
-            0.0f,
+            0,
             WHITE
         );
 
@@ -430,14 +223,12 @@ int main(void)
     }
 
     // =========================
-    // LIBERAR TEXTURAS
+    // LIBERAR
     // =========================
 
-    UnloadTexture(background);
+    UnloadAbelha(&abelha);
 
-    UnloadTexture(gnomo1);
-    UnloadTexture(gnomo2);
-    UnloadTexture(gnomo3);
+    UnloadTexture(background);
 
     UnloadTexture(et1);
     UnloadTexture(et2);

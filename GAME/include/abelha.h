@@ -3,20 +3,23 @@
 
 #include "raylib.h"
 
-typedef struct Abelha{
+typedef struct {
     Texture2D textura;
+    int x;
+    int y;
     int lane;
-    float x;
-    float y;
-    int ativa;
-}Abelha;
+    int frameAtual;
+    int timerAnimacao;
+} Abelha;
 
-void InicializarAbelha(Abelha *abelha, Texture2D textura, int lane);
+void InitAbelha(Abelha *abelha, Texture2D textura, int lane);
 
-void atualizarAbelha(Abelha *abelha, float deltaTime);
+void AtualizarAbelha(Abelha *abelha, float deltaTime);
 
-void desenharAbelha(Abelha *abelha);
+void DesenharAbelha(Abelha *abelha);
 
-void destruirAbelha(Abelha *abelha);
+Rectangle GetHitboxAbelha(Abelha *abelha);
+
+void UnloadAbelha(Abelha *abelha);
 
 #endif
