@@ -1,5 +1,5 @@
 #include "raylib.h"
-#include "abelha.h"
+#include "../GAME/include/abelha.h"
 
 int main(void)
 {
@@ -19,7 +19,7 @@ int main(void)
     // BACKGROUND
     // =========================
 
-    Texture2D background = LoadTexture("background.jpg");
+    Texture2D background = LoadTexture("background.png");
     SetTextureFilter(background, TEXTURE_FILTER_POINT);
 
     // =========================

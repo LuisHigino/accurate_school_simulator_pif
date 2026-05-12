@@ -2,11 +2,12 @@ EXEC = accurateschoolsimulator
 
 # Compilador e flags
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -I/usr/local/include -g
+CFLAGS = -Wall -Wextra -std=c99 -I/usr/local/include -I../GAME/include -g
 LDFLAGS = -L/usr/local/lib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 # Encontra todos os arquivos .c na pasta atual
-SRC = $(wildcard *.c)
+# Include local .c files and the shared abelha implementation
+SRC = $(wildcard *.c) ../abelha.c
 # Substitui a extensão .c por .o para gerar os objetos
 OBJ = $(SRC:.c=.o)
 
