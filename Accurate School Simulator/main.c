@@ -5,15 +5,24 @@ int main(void)
 {
     const int screenWidth = 1390;
     const int screenHeight = 797;
+    const float tempoParaLinhaChegada = 60.0f;
+    const float velocidadeLinhaChegada = 8.0f;
+    const int limiteEsquerdoAbelha = 60;
+    const int limiteDireitoAbelha = screenWidth - 80;
 
     InitWindow(screenWidth, screenHeight, "Gnomo VS Aliens");
     SetTargetFPS(60);
 
     bool jogoComecou = false;
+    bool jogoVencido = false;
+    bool linhaChegadaLiberada = false;
+
+    float tempoDecorrido = 0.0f;
+    float linhaChegadaX = screenWidth + 200;
 
     int meio = 400;
-    int baixo = 550;
-    int cima = 250;
+    int baixo = 700;
+    int cima = 100;
 
     // =========================
     // BACKGROUND
@@ -57,29 +66,70 @@ int main(void)
 
     while (!WindowShouldClose())
     {
+        int teclaPressionada = GetKeyPressed();
+
         // =========================
         // COMEÇAR JOGO
         // =========================
 
-        if (!jogoComecou && GetKeyPressed() != 0)
+        if (!jogoComecou && teclaPressionada != 0)
         {
             jogoComecou = true;
+            jogoVencido = false;
+            linhaChegadaLiberada = false;
+            tempoDecorrido = 0.0f;
+            linhaChegadaX = screenWidth + 200;
+
+            abelha.x = 120;
+            abelha.lane = 1;
+            abelha.y = 400;
+
+            inimigo1X = screenWidth + 100;
+            inimigo1Y = meio;
+
+            inimigo2X = screenWidth + 500;
+            inimigo2Y = baixo;
         }
 
         // =========================
         // ABELHA
         // =========================
 
-        if (jogoComecou)
+        if (jogoComecou && !jogoVencido)
         {
+            tempoDecorrido += GetFrameTime();
+
+            if (tempoDecorrido >= tempoParaLinhaChegada)
+                linhaChegadaLiberada = true;
+
+            if (linhaChegadaLiberada)
+            {
+                if (linhaChegadaX > abelha.x + 40)
+                    linhaChegadaX -= velocidadeLinhaChegada * 60 * GetFrameTime();
+                else
+                    linhaChegadaX = abelha.x + 40;
+            }
+
             AtualizarAbelha(&abelha, GetFrameTime());
+
+            if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
+                abelha.x -= 7;
+
+            if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
+                abelha.x += 7;
+
+            if (abelha.x < limiteEsquerdoAbelha)
+                abelha.x = limiteEsquerdoAbelha;
+
+            if (abelha.x > limiteDireitoAbelha)
+                abelha.x = limiteDireitoAbelha;
         }
 
         // =========================
         // INIMIGOS
         // =========================
 
-        if (jogoComecou)
+        if (jogoComecou && !jogoVencido)
         {
             inimigo1X -= velocidadeInimigo;
             inimigo2X -= velocidadeInimigo;
@@ -135,10 +185,15 @@ int main(void)
         // COLISÃO
         // =========================
 
-        if (CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo1Rect) ||
-            CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo2Rect))
+        if (jogoComecou && !jogoVencido &&
+            (CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo1Rect) ||
+             CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo2Rect)))
         {
             jogoComecou = false;
+            jogoVencido = false;
+            linhaChegadaLiberada = false;
+            tempoDecorrido = 0.0f;
+            linhaChegadaX = screenWidth + 200;
 
             inimigo1X = screenWidth + 100;
             inimigo1Y = meio;
@@ -148,10 +203,21 @@ int main(void)
         }
 
         // =========================
+        // VITÓRIA
+        // =========================
+
+        if (jogoComecou && !jogoVencido && linhaChegadaLiberada && abelha.x >= linhaChegadaX - 20)
+        {
+            jogoVencido = true;
+            jogoComecou = false;
+        }
+
+        // =========================
         // ANIMAÇÃO ET
         // =========================
 
-        timerEtAnimacao++;
+        if (jogoComecou && !jogoVencido)
+            timerEtAnimacao++;
 
         if (timerEtAnimacao > 10)
         {
@@ -197,9 +263,33 @@ int main(void)
                 30,
                 WHITE
             );
+
+            DrawText(
+                "SOBREVIVA 1 MINUTO PARA LIBERAR A LINHA DE CHEGADA",
+                250,
+                120,
+                24,
+                LIGHTGRAY
+            );
+        }
+
+        if (linhaChegadaLiberada)
+        {
+            DrawLine((int)linhaChegadaX, 0, (int)linhaChegadaX, screenHeight, YELLOW);
+            DrawText("CHEGADA", (int)linhaChegadaX - 30, 20, 22, YELLOW);
         }
 
         DesenharAbelha(&abelha);
+
+        if (jogoComecou || jogoVencido)
+        {
+            float tempoRestante = tempoParaLinhaChegada - tempoDecorrido;
+
+            if (tempoRestante < 0.0f)
+                tempoRestante = 0.0f;
+
+            DrawText(TextFormat("TEMPO: %02d", (int)tempoRestante), 30, 30, 28, WHITE);
+        }
 
         DrawTexturePro(
             frameEt,
@@ -218,6 +308,13 @@ int main(void)
             0,
             WHITE
         );
+
+        if (jogoVencido)
+        {
+            DrawRectangle(0, screenHeight / 2 - 60, screenWidth, 120, Fade(BLACK, 0.75f));
+            DrawText("PARABENS VOCE VENCEU O JOGO", 360, screenHeight / 2 - 15, 30, YELLOW);
+            DrawText("PRESSIONE QUALQUER TECLA PARA JOGAR NOVAMENTE", 280, screenHeight / 2 + 25, 22, WHITE);
+        }
 
         EndDrawing();
     }
