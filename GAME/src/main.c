@@ -9,8 +9,6 @@ int main(void)
     const int screenHeight = 797;
     const float tempoParaLinhaChegada = 60.0f;
     const float velocidadeLinhaChegada = 8.0f;
-    const int limiteEsquerdoAbelha = 60;
-    const int limiteDireitoAbelha = screenWidth - 80;
 
     InitWindow(screenWidth, screenHeight, "Gnomo VS Aliens");
     SetTargetFPS(60);
@@ -100,19 +98,8 @@ int main(void)
                     linhaChegadaX = abelha.x + 40;
             }
 
-            AtualizarAbelha(&abelha, GetFrameTime());
+            AtualizarAbelha(&abelha, GetFrameTime(), screenWidth);
 
-            if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
-                abelha.x -= 7;
-
-            if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
-                abelha.x += 7;
-
-            if (abelha.x < limiteEsquerdoAbelha)
-                abelha.x = limiteEsquerdoAbelha;
-
-            if (abelha.x > limiteDireitoAbelha)
-                abelha.x = limiteDireitoAbelha;
         }
 
         // =========================
