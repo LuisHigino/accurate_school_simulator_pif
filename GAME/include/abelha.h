@@ -2,6 +2,7 @@
 #define ABELHA_H
 
 #include "raylib.h"
+#include "constantes.h"
 
 typedef struct {
     Texture2D textura;
@@ -10,9 +11,6 @@ typedef struct {
     int lane;
     int frameAtual;
     int timerAnimacao;
-    int meio;
-    int cima;
-    int baixo;
 } Abelha;
 
 void InitAbelha(Abelha *abelha, Texture2D textura, int lane);

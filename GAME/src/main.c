@@ -1,5 +1,7 @@
 #include "raylib.h"
 #include "abelha.h"
+#include "inimigo.h"
+#include "constantes.h"
 
 int main(void)
 {
@@ -20,10 +22,6 @@ int main(void)
     float tempoDecorrido = 0.0f;
     float linhaChegadaX = screenWidth + 200;
 
-    int meio = 400;
-    int baixo = 550;
-    int cima = 250;
-
     
 
     // =========================
@@ -43,10 +41,6 @@ int main(void)
     Abelha abelha;
     InitAbelha(&abelha, texturaAbelha, 1);
 
-    abelha.meio = meio;
-    abelha.cima = cima;
-    abelha.baixo = baixo;
-
     // =========================
     // INIMIGOS
     // =========================
@@ -62,13 +56,8 @@ int main(void)
     int frameEtAtual = 0;
     int timerEtAnimacao = 0;
 
-    int inimigo1X = screenWidth + 100;
-    int inimigo1Y = meio;
-
-    int inimigo2X = screenWidth + 500;
-    int inimigo2Y = baixo;
-
-    int velocidadeInimigo = 5;
+    Inimigo inimigos[MAX_INIMIGOS];
+    InitInimigos(inimigos, 0, screenWidth);
 
     while (!WindowShouldClose())
     {
@@ -88,13 +77,8 @@ int main(void)
 
             abelha.x = 120;
             abelha.lane = 1;
-            abelha.y = 400;
 
-            inimigo1X = screenWidth + 100;
-            inimigo1Y = meio;
-
-            inimigo2X = screenWidth + 500;
-            inimigo2Y = baixo;
+            InitInimigos(inimigos, 3, screenWidth);
         }
 
         // =========================
@@ -137,61 +121,22 @@ int main(void)
 
         if (jogoComecou && !jogoVencido)
         {
-            inimigo1X -= velocidadeInimigo;
 
-            if (inimigo1X < -100)
-            {
-                inimigo1X = screenWidth + (GetRandomValue(20, 50) * 10);
-
-                int faixa = GetRandomValue(0, 2);
-
-                if (faixa == 0)
-                    inimigo1Y = cima;
-                else if (faixa == 1)
-                    inimigo1Y = meio;
-                else
-                    inimigo1Y = baixo;
-            }
-
+            AtualizarInimigos(inimigos, screenWidth);
         }
-
-        // =========================
-        // HITBOX
-        // =========================
-
-        Rectangle inimigo1Rect = {
-            inimigo1X - 20,
-            inimigo1Y - 20,
-            40,
-            40
-        };
-
-        Rectangle inimigo2Rect = {
-            inimigo2X - 20,
-            inimigo2Y - 20,
-            40,
-            40
-        };
-
         // =========================
         // COLISÃO
         // =========================
 
-        if (jogoComecou && !jogoVencido &&
-            (CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo1Rect) ||
-             CheckCollisionRecs(GetHitboxAbelha(&abelha), inimigo2Rect)))
-        {
+        if (ChecarColisaoInimigos(inimigos, GetHitboxAbelha(&abelha))) {
+
             jogoComecou = false;
             jogoVencido = false;
             linhaChegadaLiberada = false;
             tempoDecorrido = 0.0f;
             linhaChegadaX = screenWidth + 200;
 
-            inimigo1X = screenWidth + 100;
-            inimigo1Y = meio;
 
-            inimigo2X = screenWidth + 500;
-            inimigo2Y = baixo;
         }
 
         // =========================
@@ -283,23 +228,7 @@ int main(void)
             DrawText(TextFormat("TEMPO: %02d", (int)tempoRestante), 30, 30, 28, WHITE);
         }
 
-        DrawTexturePro(
-            frameEt,
-            (Rectangle){0, 0, frameEt.width, frameEt.height},
-            (Rectangle){inimigo1X - 32, inimigo1Y - 32, 64, 64},
-            (Vector2){0, 0},
-            0,
-            WHITE
-        );
-
-        DrawTexturePro(
-            frameEt,
-            (Rectangle){0, 0, frameEt.width, frameEt.height},
-            (Rectangle){inimigo2X - 32, inimigo2Y - 32, 64, 64},
-            (Vector2){0, 0},
-            0,
-            WHITE
-        );
+        DesenharInimigos(inimigos, frameEt);
 
         if (jogoVencido)
         {

@@ -1,8 +1,5 @@
 #include "abelha.h"
-
-int cima;
-int meio;
-int baixo;
+#include "constantes.h"
 
 
 void InitAbelha(Abelha *abelha, Texture2D textura, int lane)
@@ -12,11 +9,11 @@ void InitAbelha(Abelha *abelha, Texture2D textura, int lane)
     abelha->x = 120;
 
     if (lane == 0)
-        abelha->y = cima;
+        abelha->y = CIMA;
     else if (lane == 1)
-        abelha->y = meio;
+        abelha->y = MEIO;
     else
-        abelha->y = baixo;
+        abelha->y = BAIXO;
 
     abelha->lane = lane;
 
