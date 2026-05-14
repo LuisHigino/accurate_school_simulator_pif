@@ -1,30 +1,33 @@
-EXEC = accurateschoolsimulator
-
-# Compilador e flags
+# ==========================================
+# CONFIGURAÇÕES BÁSICAS
+# ==========================================
+EXEC = gnomo_vs_aliens
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -I./GAME -I/usr/local/include -g
-LDFLAGS = -L/usr/local/lib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
-# Encontra todos os arquivos .c da pasta do jogo
-SRC = $(wildcard GAME/*.c)
-# Substitui a extensão .c por .o para gerar os objetos
-OBJ = $(SRC:.c=.o)
+# ==========================================
+# PASTAS E ARQUIVOS
+# ==========================================
+# Diz ao compilador onde procurar os arquivos .h
+INCLUDES = -IGAME/include
 
-# Regra principal (o que roda quando você digita apenas 'make')
+# Pega TODOS os arquivos .c dentro da pasta GAME/src
+SRC = GAME/src/*.c
+
+# ==========================================
+# FLAGS
+# ==========================================
+CFLAGS = -Wall $(INCLUDES)
+
+# Flags da Raylib (Para Linux. Se for Windows: -lraylib -lopengl32 -lgdi32 -lwinmm)
+LDFLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+
+# ==========================================
+# REGRAS DE COMPILAÇÃO
+# ==========================================
 all: $(EXEC)
 
-# Regra para compilar o executável
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC) $(LDFLAGS)
+$(EXEC):
+	$(CC) $(SRC) $(CFLAGS) -o $(EXEC) $(LDFLAGS)
 
-# Regra para compilar os arquivos .o a partir dos .c
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# Regra para limpar os arquivos compilados
 clean:
-	rm -f $(OBJ) $(EXEC)
-
-# Regra para compilar e rodar o jogo de uma vez só
-run: $(EXEC)
-	./$(EXEC)
+	rm -f $(EXEC)
