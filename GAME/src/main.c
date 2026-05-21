@@ -1,244 +1,78 @@
 #include "raylib.h"
-#include "abelha.h"
-#include "inimigo.h"
-#include "constantes.h"
+#include "submain.h"
 
-int main(void)
-{
-    const int screenWidth = 1390;
-    const int screenHeight = 797;
-    const float tempoParaLinhaChegada = 60.0f;
-    const float velocidadeLinhaChegada = 8.0f;
+int main(void) {
 
-    InitWindow(screenWidth, screenHeight, "Gnomo VS Aliens");
-    SetTargetFPS(60);
-
-    bool jogoComecou = false;
-    bool jogoVencido = false;
-    bool linhaChegadaLiberada = false;
-
-    float tempoDecorrido = 0.0f;
-    float linhaChegadaX = screenWidth + 200;
-
+    InitWindow(1920, 1080, "Jogo Principal - Sala de Aula");
+    
+    RenderTexture2D telaSubJogo = LoadRenderTexture(1280, 720);
     
 
-    // =========================
-    // BACKGROUND
-    // =========================
+    InitSubJogo();
 
-    Texture2D background = LoadTexture("GAME/assets/images/background.png");
-    SetTextureFilter(background, TEXTURE_FILTER_POINT);
+    Texture2D backgroundAula = LoadTexture("GAME/assets/images/background_sala_de_aula.png");
+    
+    Vector2 posicaoSubJogo = { 320, 320 };
+    Vector2 posicaoBase = { 320, 320};
+    Vector2 posicaoAbaixado = { 320, 985};
+    bool TabletLevantado = true;
 
-    // =========================
-    // ABELHA
-    // =========================
+    SetTargetFPS(60);
 
-    Texture2D texturaAbelha = LoadTexture("GAME/assets/images/gnomo_jetpack1.png");
-    SetTextureFilter(texturaAbelha, TEXTURE_FILTER_POINT);
+    while (!WindowShouldClose()) {
+        // --- ATUALIZAÇÃO (UPDATE) ---
+        
+        // Exemplo de interação: Se apertar espaço, move o subjogo para baixo
+        if (IsKeyDown(KEY_SPACE)) {
+            posicaoSubJogo.y = posicaoAbaixado.y;
+            TabletLevantado = false;
 
-    Abelha abelha;
-    InitAbelha(&abelha, texturaAbelha, 1);
-
-    // =========================
-    // INIMIGOS
-    // =========================
-
-    Texture2D et1 = LoadTexture("GAME/assets/images/et1.png");
-    Texture2D et2 = LoadTexture("GAME/assets/images/et2.png");
-    Texture2D et3 = LoadTexture("GAME/assets/images/et3.png");
-
-    SetTextureFilter(et1, TEXTURE_FILTER_POINT);
-    SetTextureFilter(et2, TEXTURE_FILTER_POINT);
-    SetTextureFilter(et3, TEXTURE_FILTER_POINT);
-
-    int frameEtAtual = 0;
-    int timerEtAnimacao = 0;
-
-    Inimigo inimigos[MAX_INIMIGOS];
-    InitInimigos(inimigos, 0, screenWidth);
-
-    while (!WindowShouldClose())
-    {
-        int teclaPressionada = GetKeyPressed();
-
-        // =========================
-        // COMEÇAR JOGO
-        // =========================
-
-        if (!jogoComecou && teclaPressionada != 0)
-        {
-            jogoComecou = true;
-            jogoVencido = false;
-            linhaChegadaLiberada = false;
-            tempoDecorrido = 0.0f;
-            linhaChegadaX = screenWidth + 200;
-
-            abelha.x = 120;
-            abelha.lane = 1;
-
-            InitInimigos(inimigos, 3, screenWidth);
+        } else {
+            posicaoSubJogo.y = posicaoBase.y;
+            TabletLevantado = true;
         }
+        
 
-        // =========================
-        // ABELHA
-        // =========================
+        
 
-        if (jogoComecou && !jogoVencido)
-        {
-            tempoDecorrido += GetFrameTime();
+        UpdateSubJogo();
 
-            if (tempoDecorrido >= tempoParaLinhaChegada)
-                linhaChegadaLiberada = true;
+        // --- DESENHO (DRAW) ---
+        
+        // PASSO A: Desenhar o subjogo DENTRO da tela virtual
+        BeginTextureMode(telaSubJogo);
+            ClearBackground(BLACK);
+            DrawSubJogo(); // Aqui dentro as coordenadas de 1280x720 funcionam perfeitamente!
+        EndTextureMode();
 
-            if (linhaChegadaLiberada)
-            {
-                if (linhaChegadaX > abelha.x + 40)
-                    linhaChegadaX -= velocidadeLinhaChegada * 60 * GetFrameTime();
-                else
-                    linhaChegadaX = abelha.x + 40;
-            }
-
-            AtualizarAbelha(&abelha, GetFrameTime(), screenWidth);
-
-        }
-
-        // =========================
-        // INIMIGOS
-        // =========================
-
-        if (jogoComecou && !jogoVencido)
-        {
-
-            AtualizarInimigos(inimigos, screenWidth);
-        }
-        // =========================
-        // COLISÃO
-        // =========================
-
-        if (ChecarColisaoInimigos(inimigos, GetHitboxAbelha(&abelha))) {
-
-            jogoComecou = false;
-            jogoVencido = false;
-            linhaChegadaLiberada = false;
-            tempoDecorrido = 0.0f;
-            linhaChegadaX = screenWidth + 200;
-
-
-        }
-
-        // =========================
-        // VITÓRIA
-        // =========================
-
-        if (jogoComecou && !jogoVencido && linhaChegadaLiberada && abelha.x >= linhaChegadaX - 20)
-        {
-            jogoVencido = true;
-            jogoComecou = false;
-        }
-
-        // =========================
-        // ANIMAÇÃO ET
-        // =========================
-
-        if (jogoComecou && !jogoVencido)
-            timerEtAnimacao++;
-
-        if (timerEtAnimacao > 10)
-        {
-            frameEtAtual++;
-            timerEtAnimacao = 0;
-
-            if (frameEtAtual > 2)
-                frameEtAtual = 0;
-        }
-
-        Texture2D frameEt;
-
-        if (frameEtAtual == 0)
-            frameEt = et1;
-        else if (frameEtAtual == 1)
-            frameEt = et2;
-        else
-            frameEt = et3;
-
-        // =========================
-        // DESENHAR
-        // =========================
-
+        // PASSO B: Desenhar tudo na tela REAL do monitor
         BeginDrawing();
+            ClearBackground(BLACK);
 
-        ClearBackground(BLACK);
-
-        DrawTexturePro(
-            background,
-            (Rectangle){0, 0, background.width, background.height},
-            (Rectangle){0, 0, screenWidth, screenHeight},
-            (Vector2){0, 0},
-            0,
-            WHITE
-        );
-
-        if (!jogoComecou)
-        {
-            DrawText(
-                "APERTE QUALQUER TECLA PARA COMEÇAR",
-                320,
-                80,
-                30,
+            DrawTexturePro(
+                backgroundAula,
+                (Rectangle){ 0, 0, (float)backgroundAula.width, (float)backgroundAula.height },
+                (Rectangle){ 0, 0, 1920.0f, 1080.0f },
+                (Vector2){ 0, 0 },
+                0.0f,
                 WHITE
             );
 
-            DrawText(
-                "SOBREVIVA 1 MINUTO PARA LIBERAR A LINHA DE CHEGADA",
-                250,
-                120,
-                24,
-                LIGHTGRAY
-            );
-        }
+            
+            Rectangle orig = { 0, 0, 1280.0f, -720.0f };
+            Rectangle dest = { posicaoSubJogo.x, posicaoSubJogo.y, 1280.0f, 720.0f };
+            Vector2 origin = { 0, 0 };
+    
+            DrawTexturePro(telaSubJogo.texture, orig, dest, origin, 0.0f, WHITE);
 
-        if (linhaChegadaLiberada)
-        {
-            DrawLine((int)linhaChegadaX, 0, (int)linhaChegadaX, screenHeight, YELLOW);
-            DrawText("CHEGADA", (int)linhaChegadaX - 30, 20, 22, YELLOW);
-        }
-
-        DesenharAbelha(&abelha);
-
-        if (jogoComecou || jogoVencido)
-        {
-            float tempoRestante = tempoParaLinhaChegada - tempoDecorrido;
-
-            if (tempoRestante < 0.0f)
-                tempoRestante = 0.0f;
-
-            DrawText(TextFormat("TEMPO: %02d", (int)tempoRestante), 30, 30, 28, WHITE);
-        }
-
-        DesenharInimigos(inimigos, frameEt);
-
-        if (jogoVencido)
-        {
-            DrawRectangle(0, screenHeight / 2 - 60, screenWidth, 120, Fade(BLACK, 0.75f));
-            DrawText("PARABENS VOCE VENCEU O JOGO", 360, screenHeight / 2 - 15, 30, YELLOW);
-            DrawText("PRESSIONE QUALQUER TECLA PARA JOGAR NOVAMENTE", 280, screenHeight / 2 + 25, 22, WHITE);
-        }
-
+            
         EndDrawing();
     }
 
-    // =========================
-    // LIBERAR
-    // =========================
-
-    UnloadAbelha(&abelha);
-
-    UnloadTexture(background);
-
-    UnloadTexture(et1);
-    UnloadTexture(et2);
-    UnloadTexture(et3);
-
+    // Descarrega as coisas da memória
+    UnloadTexture(backgroundAula);
+    UnloadSubJogo();
+    UnloadRenderTexture(telaSubJogo);
     CloseWindow();
 
     return 0;
