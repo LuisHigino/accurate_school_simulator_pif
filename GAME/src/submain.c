@@ -154,48 +154,45 @@ void UpdateSubJogo(void)
 // ============================================================================
 void DrawSubJogo(void)
 {
-    // NOTA: BeginDrawing() e EndDrawing() FORAM REMOVIDOS DAQUI!
-    
     ClearBackground(BLACK);
 
-    DrawTexturePro(
-        background,
-        (Rectangle){0, 0, (float)background.width, (float)background.height},
-        (Rectangle){0, 0, (float)screenWidth, (float)screenHeight},
-        (Vector2){0, 0},
-        0,
-        WHITE
-    );
+    // Trava de segurança do Background
+    if (background.width > 0) {
+        DrawTexturePro(
+            background,
+            (Rectangle){0, 0, (float)background.width, (float)background.height},
+            (Rectangle){0, 0, (float)screenWidth, (float)screenHeight},
+            (Vector2){0, 0}, 0, WHITE
+        );
+    } else {
+        // Se falhar, desenha um fundo cinza escuro
+        DrawRectangle(0, 0, screenWidth, screenHeight, DARKGRAY);
+        DrawText("FALTA BACKGROUND", 10, 10, 20, RED);
+    }
 
-    if (!jogoComecou)
-    {
+    if (!jogoComecou) {
         DrawText("APERTE QUALQUER TECLA PARA COMEÇAR", 320, 80, 30, WHITE);
         DrawText("SOBREVIVA 1 MINUTO PARA LIBERAR A LINHA DE CHEGADA", 250, 120, 24, LIGHTGRAY);
     }
 
-    if (linhaChegadaLiberada)
-    {
+    if (linhaChegadaLiberada) {
         DrawLine((int)linhaChegadaX, 0, (int)linhaChegadaX, screenHeight, YELLOW);
         DrawText("CHEGADA", (int)linhaChegadaX - 30, 20, 22, YELLOW);
     }
 
     DesenharAbelha(&abelha);
 
-    if (jogoComecou || jogoVencido)
-    {
+    if (jogoComecou || jogoVencido) {
         float tempoRestante = tempoParaLinhaChegada - tempoDecorrido;
         if (tempoRestante < 0.0f) tempoRestante = 0.0f;
-
         DrawText(TextFormat("TEMPO: %02d", (int)tempoRestante), 30, 30, 28, WHITE);
     }
 
     DesenharInimigos(inimigos, frameEt);
 
-    if (jogoVencido)
-    {
+    if (jogoVencido) {
         DrawRectangle(0, screenHeight / 2 - 60, screenWidth, 120, Fade(BLACK, 0.75f));
         DrawText("PARABENS VOCE VENCEU O JOGO", 360, screenHeight / 2 - 15, 30, YELLOW);
-        DrawText("PRESSIONE QUALQUER TECLA PARA JOGAR NOVAMENTE", 280, screenHeight / 2 + 25, 22, WHITE);
     }
 }
 

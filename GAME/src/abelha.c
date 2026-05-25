@@ -2,11 +2,9 @@
 #include "abelha.h"
 #include "constantes.h"
 
-
 void InitAbelha(Abelha *abelha, Texture2D textura, int lane)
 {
     abelha->textura = textura;
-
     abelha->x = 120;
 
     if (lane == 0)
@@ -17,14 +15,11 @@ void InitAbelha(Abelha *abelha, Texture2D textura, int lane)
         abelha->y = BAIXO;
 
     abelha->lane = lane;
-
     abelha->frameAtual = 0;
     abelha->timerAnimacao = 0;
 }
 
-
 void AtualizarAbelha(Abelha *abelha, float deltaTime, int screenWidth) {
-
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
         if (abelha->lane > 0) {
             abelha->lane--;
@@ -48,31 +43,22 @@ void AtualizarAbelha(Abelha *abelha, float deltaTime, int screenWidth) {
 
 void DesenharAbelha(Abelha *abelha)
 {
-    DrawTexturePro(
-        abelha->textura,
-
-        (Rectangle){
-            0,
-            0,
-            abelha->textura.width,
-            abelha->textura.height
-        },
-
-        (Rectangle){
-            abelha->x,
-            abelha->y - 32,
-            64,
-            64
-        },
-
-        (Vector2){0, 0},
-
-        0.0f,
-
-        WHITE
-    );
+    // Trava de segurança da Abelha/Gnomo
+    if (abelha->textura.width > 0) {
+        DrawTexturePro(
+            abelha->textura,
+            (Rectangle){0, 0, abelha->textura.width, abelha->textura.height},
+            (Rectangle){abelha->x, abelha->y - 32, 64, 64},
+            (Vector2){0, 0}, 0.0f, WHITE
+        );
+    } else {
+        // Se falhar, desenha o gnomo como um quadrado azul claro
+        DrawRectangle(abelha->x, abelha->y - 32, 64, 64, SKYBLUE);
+        DrawText("GNOMO", abelha->x, abelha->y - 40, 10, WHITE);
+    }
 }
 
+// A FUNÇÃO QUE HAVIA SUMIDO VOLTOU AQUI:
 Rectangle GetHitboxAbelha(Abelha *abelha)
 {
     Rectangle hitbox = {

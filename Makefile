@@ -31,3 +31,6 @@ $(EXEC):
 
 clean:
 	rm -f $(EXEC)
+
+run: all
+	WAYLAND_DISPLAY="" ./Accurate_School_Simulator

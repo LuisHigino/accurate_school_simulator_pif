@@ -41,14 +41,20 @@ void AtualizarInimigos(Inimigo inimigos[], int screenWidth) {
 void DesenharInimigos(Inimigo inimigos[], Texture2D texturaFrame) {
     for (int i = 0; i < MAX_INIMIGOS; i++) {
         if (inimigos[i].ativo) {
-            DrawTexturePro(
-                texturaFrame,
-                (Rectangle){0, 0, texturaFrame.width, texturaFrame.height},
-                (Rectangle){inimigos[i].x - 32, inimigos[i].y - 32, 64, 64},
-                (Vector2){0, 0},
-                0,
-                WHITE
-            );
+            
+            // Trava de segurança do Inimigo/ET
+            if (texturaFrame.width > 0) {
+                DrawTexturePro(
+                    texturaFrame,
+                    (Rectangle){0, 0, texturaFrame.width, texturaFrame.height},
+                    (Rectangle){inimigos[i].x - 32, inimigos[i].y - 32, 64, 64},
+                    (Vector2){0, 0}, 0, WHITE
+                );
+            } else {
+                // Se falhar, desenha o ET como um quadrado verde
+                DrawRectangle(inimigos[i].x - 32, inimigos[i].y - 32, 64, 64, GREEN);
+                DrawText("ET", inimigos[i].x, inimigos[i].y - 45, 10, WHITE);
+            }
         }
     }
 }
