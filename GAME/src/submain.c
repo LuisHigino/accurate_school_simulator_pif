@@ -20,12 +20,16 @@ static float tempoDecorrido = 0.0f;
 static float linhaChegadaX = 1280 + 200; // 1280 é o screenWidth fixo aqui
 
 static Texture2D background;
-static Texture2D texturaAbelha;
+static Texture2D texturaAbelha1;
+static Texture2D texturaAbelha2;
+static Texture2D texturaAbelha3;
 static Texture2D et1;
 static Texture2D et2;
 static Texture2D et3;
 static Texture2D frameEt; // Guardará o frame atual da animação
 
+static int frameAbelhaAtual = 0;
+static int timerAbelhaAnimacao = 0;
 static int frameEtAtual = 0;
 static int timerEtAnimacao = 0;
 
@@ -42,9 +46,13 @@ void InitSubJogo(void)
     SetTextureFilter(background, TEXTURE_FILTER_POINT);
 
     // Carrega o Gnomo (Abelha)
-    texturaAbelha = LoadTexture("GAME/assets/images/gnomo_jetpack1.png");
-    SetTextureFilter(texturaAbelha, TEXTURE_FILTER_POINT);
-    InitAbelha(&abelha, texturaAbelha, 1);
+    texturaAbelha1 = LoadTexture("GAME/assets/images/gnomo_jetpack1.png");
+    texturaAbelha2 = LoadTexture("GAME/assets/images/gnomo_jetpack2.png");
+    texturaAbelha3 = LoadTexture("GAME/assets/images/gnomo_jetpack3.png");
+    SetTextureFilter(texturaAbelha1, TEXTURE_FILTER_POINT);
+    SetTextureFilter(texturaAbelha2, TEXTURE_FILTER_POINT);
+    SetTextureFilter(texturaAbelha3, TEXTURE_FILTER_POINT);
+    InitAbelha(&abelha, texturaAbelha1, 1);
 
     // Carrega os ETs (Inimigos)
     et1 = LoadTexture("GAME/assets/images/et1.png");
@@ -87,6 +95,24 @@ void UpdateSubJogo(void)
     }
 
     // --- ATUALIZAR GNOMO/ABELHA ---
+
+    timerAbelhaAnimacao++;
+    
+    // O número 10 define a velocidade da animação (A cada 10 frames do jogo, ele troca a imagem)
+    // Se quiser que ele bata as asas mais rápido, diminua para 5. Mais devagar, aumente para 15.
+    if (timerAbelhaAnimacao >= 10) 
+    {
+        timerAbelhaAnimacao = 0; // Zera o relógio
+        frameAbelhaAtual++;      // Pula pro próximo frame
+        
+        if (frameAbelhaAtual > 2) frameAbelhaAtual = 0; // Volta pro começo se passar do frame 3
+
+        // Troca a textura que a abelha está segurando no momento
+        if (frameAbelhaAtual == 0) abelha.textura = texturaAbelha1;
+        else if (frameAbelhaAtual == 1) abelha.textura = texturaAbelha2;
+        else if (frameAbelhaAtual == 2) abelha.textura = texturaAbelha3;
+    }
+
     if (jogoComecou && !jogoVencido)
     {
         tempoDecorrido += GetFrameTime();
@@ -203,6 +229,9 @@ void UnloadSubJogo(void)
 {
     UnloadAbelha(&abelha);
     UnloadTexture(background);
+    UnloadTexture(texturaAbelha1);
+    UnloadTexture(texturaAbelha2);
+    UnloadTexture(texturaAbelha3);
     UnloadTexture(et1);
     UnloadTexture(et2);
     UnloadTexture(et3);
