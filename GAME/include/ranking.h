@@ -1,18 +1,16 @@
 #ifndef RANKING_H
 #define RANKING_H
 
-typedef struct Ranking{
+typedef struct Ranking {
     char nome[50];
-    float tempoProfessora;
-    int dificuldade;
-    int derrotasAbelha;
+    int dados[2][2];
     struct Ranking *prox;
-}Ranking;
+} Ranking;
 
 void InserirRanking(
     Ranking **lista,
     char nome[],
-    float tempoProfessora,
+    int tempoProfessora,
     int dificuldade,
     int derrotasAbelha
 );
