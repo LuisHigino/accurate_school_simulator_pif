@@ -5,6 +5,7 @@
 #include "constantes.h"
 #include "ranking.h"
 
+#include <stdio.h>
 #include <string.h>
 
 // ============================================================================
@@ -290,14 +291,22 @@ void DrawSubJogo(void)
     DesenharInimigos(inimigos, frameEt);
 
     if (jogoVencido) {
-        DrawRectangle(0, screenHeight / 2 - 60, screenWidth, 120, Fade(BLACK, 0.75f));
-        DrawText("PARABENS VOCE VENCEU O JOGO", 360, screenHeight / 2 - 35, 30, YELLOW);
-        DrawText("DIGITE SEU NOME E APERTE ENTER PARA SALVAR NO RANKING", 190, screenHeight / 2 + 5, 24, WHITE);
-        DrawText(TextFormat("NOME: %s", nomeJogadorTamanho > 0 ? nomeJogador : ""), 420, screenHeight / 2 + 40, 28, GREEN);
+        DrawRectangle(0, 0, screenWidth, screenHeight, Fade(BLACK, 0.92f));
+
+        int tituloLargura = MeasureText("PARABENS VOCE VENCEU O JOGO", 30);
+        int instrucaoLargura = MeasureText("DIGITE SEU NOME E APERTE ENTER PARA SALVAR NO RANKING", 24);
+        char nomeTexto[80];
+        snprintf(nomeTexto, sizeof(nomeTexto), "NOME: %s", nomeJogadorTamanho > 0 ? nomeJogador : "");
+        int nomeLargura = MeasureText(nomeTexto, 28);
+
+        DrawText("PARABENS VOCE VENCEU O JOGO", (screenWidth - tituloLargura) / 2, screenHeight / 2 - 70, 30, YELLOW);
+        DrawText("DIGITE SEU NOME E APERTE ENTER PARA SALVAR NO RANKING", (screenWidth - instrucaoLargura) / 2, screenHeight / 2 - 20, 24, WHITE);
+        DrawText(nomeTexto, (screenWidth - nomeLargura) / 2, screenHeight / 2 + 25, 28, GREEN);
 
         if (rankingSalvo)
         {
-            DrawText("RANKING ATUALIZADO", 490, screenHeight / 2 + 78, 22, LIME);
+            int rankingLargura = MeasureText("RANKING ATUALIZADO", 22);
+            DrawText("RANKING ATUALIZADO", (screenWidth - rankingLargura) / 2, screenHeight / 2 + 72, 22, LIME);
         }
     }
 }
