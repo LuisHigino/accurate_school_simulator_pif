@@ -17,7 +17,7 @@ void InitInimigos(Inimigo inimigos[], int quantidadeAtiva, int screenWidth) {
             // Posição inicial randômica para cada um não nascer grudado
             inimigos[i].x = screenWidth + (i * 300);
             inimigos[i].y = SortearFaixa();
-            inimigos[i].velocidade = 12;
+            inimigos[i].velocidade = 10;
         } else {
             inimigos[i].ativo = false; // Deixa desativado os que sobrarem
         }

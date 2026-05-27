@@ -30,50 +30,39 @@ void InitSalaDeAula(int dificuldadeProfessora) {
 }
 
 void UpdateSalaDeAula(float deltaTime) {
-    // 1. Se deu Game Over, só espera o jogador apertar R para reiniciar
     if (gameOverPrincipal) {
         if (IsKeyPressed(KEY_R)) { 
-            InitSalaDeAula(professora.dificuldade); // Reinicia a fase
+            InitSalaDeAula(professora.dificuldade); 
         }
-        return; // Sai da função para o jogo não continuar rodando no fundo
+        return; 
     }
 
-    // ==========================================
-    // 2. ATUALIZAÇÕES INCONDICIONAIS (O mundo continua!)
-    // ==========================================
-    // A professora continua pensando e o gnomo continua correndo,
-    // independentemente de onde o tablet está.
     UpdateProfessora(&professora, deltaTime);
     UpdateSubJogo(); 
 
-    // ==========================================
-    // 3. LÓGICA DA BARRA DE ESPAÇO (Apenas visual)
-    // ==========================================
     if (IsKeyDown(KEY_SPACE)) {
-        posicaoSubJogo = posicaoAbaixado; // Esconde o tablet
+        posicaoSubJogo = posicaoAbaixado; 
         tabletLevantado = false;
     } else {
-        posicaoSubJogo = posicaoBase;     // Mostra o tablet
+        posicaoSubJogo = posicaoBase;     
         tabletLevantado = true;
     }
 
-    // ==========================================
-    // 4. REGRA DE GAME OVER (A Professora te pegou?)
-    // ==========================================
-    // Se ela estiver olhando (Vermelho) E o tablet estiver na sua cara: PERDEU!
     if (professora.estadoAtual == PROFE_OLHANDO && tabletLevantado) {
         gameOverPrincipal = true;
     }
-}
 
-void DrawSalaDeAula(void) {
-    // PASSO A: Renderiza o jogo do Gnomo em background (na textura virtual)
+    // ==========================================
+    // MUDANÇA AQUI: Renderiza o tablet ANTES de desenhar a tela principal!
+    // ==========================================
     BeginTextureMode(telaSubJogo);
         ClearBackground(BLACK);
         DrawSubJogo(); 
     EndTextureMode();
+}
 
-    // PASSO B: Desenha o cenário real da sala de aula
+void DrawSalaDeAula(void) {
+    
     // Proteção caso a textura falhe
     if (backgroundAula.width > 0) {
         DrawTexturePro(
