@@ -41,11 +41,11 @@ void UpdateSalaDeAula(float deltaTime) {
     UpdateSubJogo(); 
 
     if (IsKeyDown(KEY_SPACE)) {
-        posicaoSubJogo = posicaoAbaixado; 
-        tabletLevantado = false;
-    } else {
         posicaoSubJogo = posicaoBase;     
         tabletLevantado = true;
+    } else {
+        posicaoSubJogo = posicaoAbaixado; 
+        tabletLevantado = false;
     }
 
     if (professora.estadoAtual == PROFE_OLHANDO && tabletLevantado) {
