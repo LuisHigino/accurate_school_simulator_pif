@@ -18,8 +18,8 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     // 1. Carrega o fundo da sala
     backgroundAula = LoadTexture("GAME/assets/images/background_sala_de_aula.png");
     
-    // 2. Inicializa a professora (ex: posição X=900, Y=400)
-    InitProfessora(&professora, dificuldadeProfessora, (Vector2){ 900, 400 });
+    // 2. Inicializa a professora em posição maior e um pouco mais à esquerda
+    InitProfessora(&professora, dificuldadeProfessora, (Vector2){ 30, 50 });
     
     // 3. Inicializa o subjogo virtual do Gnomo/Abelha
     telaSubJogo = LoadRenderTexture(1280, 720);
@@ -94,6 +94,7 @@ void DrawSalaDeAula(void) {
 
 void UnloadSalaDeAula(void) {
     UnloadTexture(backgroundAula);
+    UnloadProfessora(&professora);
     UnloadSubJogo();
     UnloadRenderTexture(telaSubJogo);
 }
