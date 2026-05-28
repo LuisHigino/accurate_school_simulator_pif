@@ -8,5 +8,6 @@ void UpdateSubJogo(void);
 void DrawSubJogo(void);
 void UnloadSubJogo(void);
 bool SubJogoFoiVencido(void);
+bool SubJogoConsumirSolicitacaoRetornoMenu(void);
 
 #endif

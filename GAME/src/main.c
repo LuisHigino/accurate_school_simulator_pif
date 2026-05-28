@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "sala_de_aula.h"
+#include "submain.h"
 #include "ranking.h"
 
 #include <stddef.h>
@@ -129,6 +130,12 @@ int main(void) {
         else
         {
             UpdateSalaDeAula(GetFrameTime());
+
+            if (SubJogoConsumirSolicitacaoRetornoMenu())
+            {
+                telaAtual = TELA_MENU;
+                mostrarRanking = false;
+            }
         }
 
         // --- DESENHO NO CANVAS VIRTUAL (1920x1080) ---
