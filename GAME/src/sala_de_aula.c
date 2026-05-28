@@ -86,6 +86,9 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     alunoIdleFrame = 0;
                                                                     
     // 4. Inicializa o subjogo virtual do Gnomo/Abelha
+                                                            //horizontal/vertical
+                                                        // ++ = direita / ++ = cima                                
+    // 3. Inicializa o subjogo virtual do Gnomo/Abelha
     telaSubJogo = LoadRenderTexture(1280, 720);
     InitSubJogo();
     
@@ -228,6 +231,11 @@ void DrawSalaDeAula(void) {
     }
 
     // Desenha a Professora
+                                        //horizontal/vertical
+                                    // ++ = direita / ++ = baixo
+    }
+
+    // Desenha a Professora (muda de cor dependendo do estado)
     DrawProfessora(&professora);
 
     // Desenha o tablet de fundo

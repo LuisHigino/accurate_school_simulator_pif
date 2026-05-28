@@ -21,6 +21,8 @@ static bool jogoVencido = false;
 static bool linhaChegadaLiberada = false;
 static bool aguardandoNome = false;
 static bool rankingSalvo = false;
+static bool solicitarRetornoMenu = false;
+static bool retornoLiberadoAposSalvar = false;
 
 static float tempoDecorrido = 0.0f;
 static float linhaChegadaX = 1280 + 200; // 1280 é o screenWidth fixo aqui
@@ -44,6 +46,37 @@ static int timerEtAnimacao = 0;
 
 static Abelha abelha;
 static Inimigo inimigos[MAX_INIMIGOS];
+
+static Rectangle botaoVoltarMenu = { 470.0f, 605.0f, 340.0f, 40.0f };
+
+static Vector2 MouseParaCoordenadaSubJogo(void)
+{
+    const float virtualWidth = 1920.0f;
+    const float virtualHeight = 1080.0f;
+    const float subJogoOffsetX = 320.0f;
+    const float subJogoOffsetY = 320.0f;
+
+    float scale = (float)GetScreenWidth() / virtualWidth;
+    float scaleAltura = (float)GetScreenHeight() / virtualHeight;
+    if (scaleAltura < scale)
+    {
+        scale = scaleAltura;
+    }
+
+    float offsetX = ((float)GetScreenWidth() - (virtualWidth * scale)) * 0.5f;
+    float offsetY = ((float)GetScreenHeight() - (virtualHeight * scale)) * 0.5f;
+
+    Vector2 mouseTela = GetMousePosition();
+    Vector2 mouseVirtual = {
+        (mouseTela.x - offsetX) / scale,
+        (mouseTela.y - offsetY) / scale
+    };
+
+    return (Vector2){
+        mouseVirtual.x - subJogoOffsetX,
+        mouseVirtual.y - subJogoOffsetY
+    };
+}
 
 // ============================================================================
 // 1. INICIALIZAÇÃO DO SUBJOGO
@@ -87,6 +120,8 @@ void InitSubJogo(void)
     linhaChegadaLiberada = false;
     aguardandoNome = false;
     rankingSalvo = false;
+    solicitarRetornoMenu = false;
+    retornoLiberadoAposSalvar = false;
     tempoDecorrido = 0.0f;
     linhaChegadaX = screenWidth + 200;
     nomeJogador[0] = '\0';
@@ -148,6 +183,26 @@ void UpdateSubJogo(void)
             SalvarRankingTXT(rankingLista);
             rankingSalvo = true;
             aguardandoNome = false;
+            retornoLiberadoAposSalvar = false;
+        }
+
+        if (rankingSalvo)
+        {
+            if (!retornoLiberadoAposSalvar)
+            {
+                retornoLiberadoAposSalvar = true;
+            }
+            else
+            {
+                Vector2 mouseSubJogo = MouseParaCoordenadaSubJogo();
+                bool cliqueBotao = IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouseSubJogo, botaoVoltarMenu);
+                bool qualquerTecla = (teclaPressionada != 0);
+
+                if (cliqueBotao || qualquerTecla)
+                {
+                    solicitarRetornoMenu = true;
+                }
+            }
         }
 
         return;
@@ -307,6 +362,13 @@ void DrawSubJogo(void)
         {
             int rankingLargura = MeasureText("RANKING ATUALIZADO", 22);
             DrawText("RANKING ATUALIZADO", (screenWidth - rankingLargura) / 2, screenHeight / 2 + 72, 22, LIME);
+
+            DrawRectangleRec(botaoVoltarMenu, Fade(WHITE, 0.12f));
+            DrawRectangleLinesEx(botaoVoltarMenu, 1.0f, LIGHTGRAY);
+
+            const char *textoBotao = "VOLTAR AO MENU PRINCIPAL";
+            int textoLargura = MeasureText(textoBotao, 20);
+            DrawText(textoBotao, (int)(botaoVoltarMenu.x + (botaoVoltarMenu.width - textoLargura) * 0.5f), (int)botaoVoltarMenu.y + 10, 20, WHITE);
         }
     }
 }
@@ -333,4 +395,15 @@ void UnloadSubJogo(void)
 bool SubJogoFoiVencido(void)
 {
     return jogoVencido;
+}
+
+bool SubJogoConsumirSolicitacaoRetornoMenu(void)
+{
+    if (solicitarRetornoMenu)
+    {
+        solicitarRetornoMenu = false;
+        return true;
+    }
+
+    return false;
 }
