@@ -62,14 +62,14 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     alunoIdleTexture3 = LoadTexture("GAME/assets/images/aluno_idle3.png");
     
     // 2. Carrega os Sons (Ajuste o caminho das pastas se necessário)
-    somAbelha = LoadSound("GAME/assets/images/som_abelha.mp3");
-    somEscola = LoadSound("GAME/assets/images/som_escola.mp3");
-    somGiz = LoadSound("GAME/assets/images/som_giz.mp3");
-    somJumpscare = LoadSound("GAME/assets/images/som_jumpscare.mp3");
-    somLapis = LoadSound("GAME/assets/images/som_lapis.mp3");
-    somMorte = LoadSound("GAME/assets/images/som_morte.mp3");
-    somVitoria = LoadSound("GAME/assets/images/som_vitoria.mp3");
-    somVoo = LoadSound("GAME/assets/images/som_voo.mp3");
+    somAbelha = LoadSound("GAME/assets/music/som_abelha.mp3");
+    somEscola = LoadSound("GAME/assets/sounds/som_escola.mp3");
+    somGiz = LoadSound("GAME/assets/sounds/som_giz.mp3");
+    somJumpscare = LoadSound("GAME/assets/sounds/som_jumpscare.mp3");
+    somLapis = LoadSound("GAME/assets/sounds/som_lapis.mp3");
+    somMorte = LoadSound("GAME/assets/sounds/som_morte.mp3");
+    somVitoria = LoadSound("GAME/assets/music/som_vitoria.mp3");
+    somVoo = LoadSound("GAME/assets/sounds/som_voo.mp3");
 
     // Ajuste de volumes iniciais baseados na sua descrição
     SetSoundVolume(somEscola, 0.6f);
@@ -172,7 +172,9 @@ void UpdateSalaDeAula(float deltaTime) {
             posicaoSubJogo = posicaoAbaixado;
         }
 
-        
+        if (professora.estadoAtual == PROFE_OLHANDO && tabletLevantado) {
+            gameOverPrincipal = true;
+        }
     }
     // --- ESTADO 3: SE O JOGO FOI VENCIDO ---
     else

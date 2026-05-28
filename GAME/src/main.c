@@ -87,6 +87,7 @@ int main(void) {
 
     // 2. Inicia a janela com um tamanho seguro.
     InitWindow(1280, 720, "Jogo Principal - Sala de Aula");
+    InitAudioDevice();
     SetTargetFPS(60);
 
     // 3. A MÁGICA: O "Canvas" Virtual
@@ -225,6 +226,7 @@ int main(void) {
         UnloadSalaDeAula();
     }
     
+    CloseAudioDevice();
     CloseWindow();
 
     return 0;
