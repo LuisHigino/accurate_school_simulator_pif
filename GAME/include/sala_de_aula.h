@@ -8,5 +8,7 @@ void InitSalaDeAula(int dificuldadeProfessora);
 void UpdateSalaDeAula(float deltaTime);
 void DrawSalaDeAula(void);
 void UnloadSalaDeAula(void);
+int GetTempoSobrevivencia(void);
+int GetDificuldadeSala(void);
 
 #endif

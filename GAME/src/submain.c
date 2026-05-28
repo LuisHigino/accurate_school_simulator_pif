@@ -4,6 +4,7 @@
 #include "inimigo.h"
 #include "constantes.h"
 #include "ranking.h"
+#include "sala_de_aula.h" // <-- IMPORTANTE: Traz as funções de tempo e dificuldade da sala!
 
 #include <stdio.h>
 #include <string.h>
@@ -29,6 +30,8 @@ static float linhaChegadaX = 1280 + 200; // 1280 é o screenWidth fixo aqui
 static char nomeJogador[50] = { 0 };
 static int nomeJogadorTamanho = 0;
 static Ranking *rankingLista = NULL;
+
+static int totalDerrotasAbelha = 0; // <-- NOSSA VARIÁVEL RESTAURADA!
 
 static Texture2D background;
 static Texture2D texturaAbelha1;
@@ -126,6 +129,8 @@ void InitSubJogo(void)
     linhaChegadaX = screenWidth + 200;
     nomeJogador[0] = '\0';
     nomeJogadorTamanho = 0;
+
+    totalDerrotasAbelha = 0; // <-- ZERA AS MORTES QUANDO INICIA PARTIDA NOVA!
 }
 
 // ============================================================================
@@ -172,12 +177,13 @@ void UpdateSubJogo(void)
                 strcpy(nomeFinal, nomeJogador);
             }
 
+            // <-- NOSSO INSERIR RANKING PERFEITO RESTAURADO AQUI!
             InserirRanking(
                 &rankingLista,
                 nomeFinal,
-                (int)tempoDecorrido,
-                0,
-                0
+                GetTempoSobrevivencia(),
+                GetDificuldadeSala(),
+                GetDerrotasAbelha()
             );
 
             SalvarRankingTXT(rankingLista);
@@ -264,13 +270,19 @@ void UpdateSubJogo(void)
     }
 
     // --- COLISÃO ---
-    if (ChecarColisaoInimigos(inimigos, GetHitboxAbelha(&abelha))) 
+    // <-- RESTAURADA NOSSA PROTEÇÃO PARA NÃO CONTAR 60 MORTES POR SEGUNDO!
+    if (jogoComecou && !jogoVencido) 
     {
-        jogoComecou = false;
-        jogoVencido = false;
-        linhaChegadaLiberada = false;
-        tempoDecorrido = 0.0f;
-        linhaChegadaX = screenWidth + 200;
+        if (ChecarColisaoInimigos(inimigos, GetHitboxAbelha(&abelha))) 
+        {
+            totalDerrotasAbelha++; // Soma +1 na nossa variável
+
+            jogoComecou = false;
+            jogoVencido = false;
+            linhaChegadaLiberada = false;
+            tempoDecorrido = 0.0f;
+            linhaChegadaX = screenWidth + 200;
+        }
     }
 
     // --- VITÓRIA ---
@@ -406,4 +418,11 @@ bool SubJogoConsumirSolicitacaoRetornoMenu(void)
     }
 
     return false;
+}
+
+// ============================================================================
+// FUNÇÃO EXTRATORA DE MORTES QUE O GIT TINHA APAGADO!
+// ============================================================================
+int GetDerrotasAbelha(void) {
+    return totalDerrotasAbelha;
 }

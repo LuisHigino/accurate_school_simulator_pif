@@ -31,30 +31,6 @@ static bool CliqueNoRetanguloVirtual(Rectangle retanguloVirtual, Vector2 mouseVi
     return CheckCollisionPointRec(mouseVirtual, retanguloVirtual);
 }
 
-static void DesenharRankingNaTela(Ranking *lista, int posX, int posY)
-{
-    DrawRectangle(posX, posY, 460, 520, Fade(BLACK, 0.78f));
-    DrawRectangleLines(posX, posY, 460, 520, GOLD);
-
-    DrawText("RANKING AO VIVO", posX + 26, posY + 20, 34, YELLOW);
-    DrawText("NOME   TEMPO   DIF", posX + 26, posY + 70, 22, LIGHTGRAY);
-
-    int linha = 0;
-    while (lista != NULL && linha < 8)
-    {
-        DrawText(TextFormat("%d. %s", linha + 1, lista->nome), posX + 26, posY + 110 + (linha * 48), 24, WHITE);
-        DrawText(TextFormat("%d", lista->dados[0][0]), posX + 250, posY + 110 + (linha * 48), 24, SKYBLUE);
-        DrawText(TextFormat("%d", lista->dados[0][1]), posX + 350, posY + 110 + (linha * 48), 24, ORANGE);
-        lista = lista->prox;
-        linha++;
-    }
-
-    if (linha == 0)
-    {
-        DrawText("Nenhum resultado salvo ainda.", posX + 26, posY + 130, 22, LIGHTGRAY);
-    }
-}
-
 static const char *TextoDificuldade(int dificuldade)
 {
     switch (dificuldade)
@@ -62,30 +38,67 @@ static const char *TextoDificuldade(int dificuldade)
         case 1: return "FACIL";
         case 2: return "MEDIO";
         case 3: return "DIFICIL";
-        default: return "MEDIO";
+        default: return "FACIL";
     }
 }
+
+static void DesenharRankingNaTela(Ranking *lista, int posX, int posY)
+{
+    // Aumentamos a largura para 540 para caber a nova coluna confortavelmente
+    DrawRectangle(posX - 40, posY, 540, 520, Fade(BLACK, 0.78f));
+    DrawRectangleLines(posX - 40, posY, 540, 520, GOLD);
+
+    DrawText("RANKING AO VIVO", posX - 14, posY + 20, 34, YELLOW);
+    
+    // Cabeçalho das colunas atualizado
+    DrawText("NOME      TEMPO      PERDAS      DIF", posX - 14, posY + 70, 22, LIGHTGRAY);
+
+    int linha = 0;
+    while (lista != NULL && linha < 8)
+    {
+        // 1. Nome do Jogador
+        DrawText(TextFormat("%d. %s", linha + 1, lista->nome), posX - 14, posY + 110 + (linha * 48), 24, WHITE);
+        
+        // 2. Tempo Formatado (M:SS)
+        int min = lista->dados[0][0] / 60;
+        int seg = lista->dados[0][0] % 60;
+        DrawText(TextFormat("%d:%02d", min, seg), posX + 150, posY + 110 + (linha * 48), 24, SKYBLUE);
+        
+        // 3. NOVA COLUNA: Quantidade de Perdas (dados[1][0])
+        DrawText(TextFormat("%d", lista->dados[1][0]), posX + 275, posY + 110 + (linha * 48), 24, RED);
+        
+        // 4. Dificuldade em Texto
+        DrawText(TextoDificuldade(lista->dados[0][1]), posX + 370, posY + 110 + (linha * 48), 20, ORANGE);
+        
+        lista = lista->prox;
+        linha++;
+    }
+
+    if (linha == 0)
+    {
+        DrawText("Nenhum resultado salvo ainda.", posX - 14, posY + 130, 22, LIGHTGRAY);
+    }
+}
+
 
 int main(void) {
     // 1. Avisa a Raylib que a janela pode ser redimensionada e deve abrir maximizada
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
 
-    // 2. Inicia a janela com um tamanho seguro. Como mandamos maximizar, ela vai se
-    //    adaptar sozinha à resolução nativa do monitor de quem abrir o jogo.
+    // 2. Inicia a janela com um tamanho seguro.
     InitWindow(1280, 720, "Jogo Principal - Sala de Aula");
     SetTargetFPS(60);
 
-    // 3. A MÁGICA: O "Canvas" Virtual (O jogo acha que é 1080p para sempre)
+    // 3. A MÁGICA: O "Canvas" Virtual
     int virtualWidth = 1920;
     int virtualHeight = 1080;
     RenderTexture2D canvas = LoadRenderTexture(virtualWidth, virtualHeight);
     Texture2D menuTexture = LoadTexture("GAME/assets/images/Mainscreen.png");
 
     TelaAtual telaAtual = TELA_MENU;
-    int dificuldadeSelecionada = 2;
+    int dificuldadeSelecionada = 1; // Melhor começar no Fácil (1)
     bool mostrarRanking = false;
     bool sairDoJogo = false;
-    bool mostrarDificuldade = false;
 
     SetTextureFilter(menuTexture, TEXTURE_FILTER_POINT);
 
@@ -115,7 +128,6 @@ int main(void) {
                     {
                         dificuldadeSelecionada = 1;
                     }
-                    mostrarDificuldade = true;
                 }
                 else if (CliqueNoRetanguloVirtual(botaoRanking, mouseVirtual))
                 {
@@ -131,15 +143,16 @@ int main(void) {
         {
             UpdateSalaDeAula(GetFrameTime());
 
+            // A NOVIDADE DO SEU GRUPO MANTIDA AQUI!
             if (SubJogoConsumirSolicitacaoRetornoMenu())
             {
                 telaAtual = TELA_MENU;
                 mostrarRanking = false;
+                UnloadSalaDeAula(); // Descarrega o jogo da memória para não dar erro de áudio quando tentar iniciar de novo
             }
         }
 
         // --- DESENHO NO CANVAS VIRTUAL (1920x1080) ---
-        // Aqui o jogo roda intocado, com as mesmas coordenadas de sempre
         BeginTextureMode(canvas);
             ClearBackground(BLACK);
 
@@ -167,10 +180,8 @@ int main(void) {
                 DrawText("RANKING", 60, 520, 28, WHITE);
                 DrawText("SAIR", 60, 640, 28, WHITE);
 
-                if (mostrarDificuldade)
-                {
-                    DrawText(TextFormat("DIFICULDADE: %s", TextoDificuldade(dificuldadeSelecionada)), 620, 900, 30, YELLOW);
-                }
+                // Dificuldade sempre visível
+                DrawText(TextFormat("DIFICULDADE: %s", TextoDificuldade(dificuldadeSelecionada)), 620, 900, 30, YELLOW);
 
                 if (mostrarRanking)
                 {
@@ -188,17 +199,11 @@ int main(void) {
 
         // --- DESENHO FINAL NA TELA DO JOGADOR ---
         BeginDrawing();
-            // Fundo preto para gerar "barras pretas" caso o monitor seja de proporção diferente
             ClearBackground(BLACK); 
 
-            // Calcula o multiplicador exato para espremer ou esticar a imagem
             float scale = MIN((float)GetScreenWidth() / virtualWidth, (float)GetScreenHeight() / virtualHeight);
-
-            // A Raylib desenha texturas virtuais de ponta-cabeça por padrão.
-            // Passar a altura negativa (-canvas.texture.height) desvira ela.
             Rectangle areaOriginal = { 0.0f, 0.0f, (float)canvas.texture.width, -(float)canvas.texture.height };
             
-            // Calcula o meio da tela para o jogo ficar centralizado
             Rectangle areaDestino = {
                 (GetScreenWidth() - (virtualWidth * scale)) * 0.5f,
                 (GetScreenHeight() - (virtualHeight * scale)) * 0.5f,
@@ -206,7 +211,6 @@ int main(void) {
                 virtualHeight * scale
             };
 
-            // Desenha a "fita de vídeo" do jogo na tela do usuário
             DrawTexturePro(canvas.texture, areaOriginal, areaDestino, (Vector2){ 0, 0 }, 0.0f, WHITE);
 
         EndDrawing();
@@ -215,7 +219,12 @@ int main(void) {
     // Limpeza da memória
     UnloadRenderTexture(canvas);
     UnloadTexture(menuTexture);
-    UnloadSalaDeAula();
+    
+    // Descarrega apenas se o jogo fechou enquanto a fase estava rodando
+    if (telaAtual == TELA_JOGO) {
+        UnloadSalaDeAula();
+    }
+    
     CloseWindow();
 
     return 0;

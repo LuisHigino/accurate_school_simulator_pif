@@ -1,2 +1,4 @@
-lula 62 0 0
-Du 62 0 0
+luis Medio 1:13 4
+rafa Dificil 2:50 7
+edu Facil 1:03 0
+rafa2 Dificil 2:49 7

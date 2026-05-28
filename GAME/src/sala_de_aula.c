@@ -18,6 +18,11 @@ static bool gameOverJumpscareFrame = false;
 static float alunoIdleTimer = 0.0f;
 static int alunoIdleFrame = 0;
 
+// ==========================================
+// RECUPERAMOS A VARIÁVEL DE TEMPO AQUI
+// ==========================================
+static float tempoSobrevivencia = 0.0f;
+
 // VARIÁVEIS DE ÁUDIO
 static Sound somAbelha;
 static Sound somEscola;
@@ -84,16 +89,14 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     gameOverJumpscareFrame = false;
     alunoIdleTimer = 0.5f;
     alunoIdleFrame = 0;
-                                                                    
+                                                                                                
     // 4. Inicializa o subjogo virtual do Gnomo/Abelha
-                                                            //horizontal/vertical
-                                                        // ++ = direita / ++ = cima                                
-    // 3. Inicializa o subjogo virtual do Gnomo/Abelha
     telaSubJogo = LoadRenderTexture(1280, 720);
     InitSubJogo();
     
     gameOverPrincipal = false;
     tabletLevantado = true;
+    tempoSobrevivencia = 0.0f; // <-- Resetando o tempo!
 
     // Reseta as flags de controle de som de fim de jogo
     somMorteTocado = false;
@@ -147,28 +150,19 @@ void UpdateSalaDeAula(float deltaTime) {
     {
         UpdateProfessora(&professora, deltaTime);
 
-        // CONTROLE DO GIZ: Toca se a professora NÃO estiver olhando (Ex: PROFE_DE_COSTAS)
-        // Substitua pelo nome correto do estado de "não olhando" se for diferente de PROFE_OLHANDO
+        tempoSobrevivencia += deltaTime; // <-- Voltamos a contar o tempo aqui!
+
+        // CONTROLE DO GIZ
         if (professora.estadoAtual != PROFE_OLHANDO) {
             if (!IsSoundPlaying(somGiz)) PlaySound(somGiz);
         } else {
             StopSound(somGiz);
         }
 
-        // CONTROLE DE VOO: Seta para cima ou para baixo
+        // CONTROLE DE VOO
         if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN)) {
             PlaySound(somVoo);
         }
-
-        // Se o gnomo morreu (Dependendo de como seu submain avisa a morte, você adapta a condição abaixo)
-        // Como o código original não mostra a função de morte, simulei uma checagem comum:
-        /* if (GnomoColidiuComInimigo()) { 
-            if (!somMorteTocado) {
-                PlaySound(somMorte);
-                somMorteTocado = true;
-            }
-        }
-        */
 
         if (IsKeyDown(KEY_SPACE)) {
             tabletLevantado = true;
@@ -178,9 +172,7 @@ void UpdateSalaDeAula(float deltaTime) {
             posicaoSubJogo = posicaoAbaixado;
         }
 
-        if (professora.estadoAtual == PROFE_OLHANDO && tabletLevantado) {
-            gameOverPrincipal = true;
-        }
+        
     }
     // --- ESTADO 3: SE O JOGO FOI VENCIDO ---
     else
@@ -228,11 +220,6 @@ void DrawSalaDeAula(void) {
     }
     if (alunoTexture.width > 0) {    
         DrawTextureEx(alunoTexture, (Vector2){ 0, 0 }, 0.0f, 12.0f, WHITE);
-    }
-
-    // Desenha a Professora
-                                        //horizontal/vertical
-                                    // ++ = direita / ++ = baixo
     }
 
     // Desenha a Professora (muda de cor dependendo do estado)
@@ -303,9 +290,15 @@ void UnloadSalaDeAula(void) {
     UnloadProfessora(&professora);
     UnloadSubJogo();
     UnloadRenderTexture(telaSubJogo);
-    
-    // Fecha o dispositivo de áudio se for fechar o jogo por completo
-    // Se você tiver um menu principal depois desse arquivo, comente a linha abaixo 
-    // e coloque o CloseAudioDevice() apenas na sua main.cpp / main.c real.
-    // CloseAudioDevice(); 
+}
+
+// ==========================================
+// FUNÇÕES DO RANKING QUE O GIT TINHA APAGADO
+// ==========================================
+int GetTempoSobrevivencia(void) {
+    return (int)tempoSobrevivencia;
+}
+
+int GetDificuldadeSala(void) {
+    return professora.dificuldade;
 }
