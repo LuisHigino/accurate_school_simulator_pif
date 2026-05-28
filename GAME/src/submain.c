@@ -3,6 +3,10 @@
 #include "abelha.h"
 #include "inimigo.h"
 #include "constantes.h"
+#include "ranking.h"
+
+#include <stdio.h>
+#include <string.h>
 
 // ============================================================================
 // VARIÁVEIS GLOBAIS DO SUBJOGO (Visíveis apenas neste arquivo graças ao 'static')
@@ -15,9 +19,14 @@ static const float velocidadeLinhaChegada = 8.0f;
 static bool jogoComecou = false;
 static bool jogoVencido = false;
 static bool linhaChegadaLiberada = false;
+static bool aguardandoNome = false;
+static bool rankingSalvo = false;
 
 static float tempoDecorrido = 0.0f;
 static float linhaChegadaX = 1280 + 200; // 1280 é o screenWidth fixo aqui
+static char nomeJogador[50] = { 0 };
+static int nomeJogadorTamanho = 0;
+static Ranking *rankingLista = NULL;
 
 static Texture2D background;
 static Texture2D texturaAbelha1;
@@ -41,6 +50,14 @@ static Inimigo inimigos[MAX_INIMIGOS];
 // ============================================================================
 void InitSubJogo(void)
 {
+    if (rankingLista != NULL)
+    {
+        LiberarRanking(rankingLista);
+        rankingLista = NULL;
+    }
+
+    CarregarRankingTXT(&rankingLista);
+
     // Carrega o Background
     background = LoadTexture("GAME/assets/images/background.png");
     SetTextureFilter(background, TEXTURE_FILTER_POINT);
@@ -68,8 +85,12 @@ void InitSubJogo(void)
     jogoComecou = false;
     jogoVencido = false;
     linhaChegadaLiberada = false;
+    aguardandoNome = false;
+    rankingSalvo = false;
     tempoDecorrido = 0.0f;
     linhaChegadaX = screenWidth + 200;
+    nomeJogador[0] = '\0';
+    nomeJogadorTamanho = 0;
 }
 
 // ============================================================================
@@ -78,6 +99,59 @@ void InitSubJogo(void)
 void UpdateSubJogo(void)
 {
     int teclaPressionada = GetKeyPressed();
+
+    if (jogoVencido)
+    {
+        aguardandoNome = true;
+
+        int caractere = GetCharPressed();
+
+        while (caractere > 0)
+        {
+            if (caractere >= 32 && caractere <= 125 && nomeJogadorTamanho < 49)
+            {
+                nomeJogador[nomeJogadorTamanho] = (char)caractere;
+                nomeJogadorTamanho++;
+                nomeJogador[nomeJogadorTamanho] = '\0';
+            }
+
+            caractere = GetCharPressed();
+        }
+
+        if (IsKeyPressed(KEY_BACKSPACE) && nomeJogadorTamanho > 0)
+        {
+            nomeJogadorTamanho--;
+            nomeJogador[nomeJogadorTamanho] = '\0';
+        }
+
+        if (!rankingSalvo && IsKeyPressed(KEY_ENTER))
+        {
+            char nomeFinal[50];
+
+            if (nomeJogadorTamanho == 0)
+            {
+                strcpy(nomeFinal, "ANONIMO");
+            }
+            else
+            {
+                strcpy(nomeFinal, nomeJogador);
+            }
+
+            InserirRanking(
+                &rankingLista,
+                nomeFinal,
+                (int)tempoDecorrido,
+                0,
+                0
+            );
+
+            SalvarRankingTXT(rankingLista);
+            rankingSalvo = true;
+            aguardandoNome = false;
+        }
+
+        return;
+    }
 
     // --- COMEÇAR JOGO ---
     if (!jogoComecou && teclaPressionada != 0)
@@ -122,10 +196,7 @@ void UpdateSubJogo(void)
 
         if (linhaChegadaLiberada)
         {
-            if (linhaChegadaX > abelha.x + 40)
-                linhaChegadaX -= velocidadeLinhaChegada * 60 * GetFrameTime();
-            else
-                linhaChegadaX = abelha.x + 40;
+            linhaChegadaX -= velocidadeLinhaChegada * 60 * GetFrameTime();
         }
 
         AtualizarAbelha(&abelha, GetFrameTime(), screenWidth);
@@ -148,10 +219,13 @@ void UpdateSubJogo(void)
     }
 
     // --- VITÓRIA ---
-    if (jogoComecou && !jogoVencido && linhaChegadaLiberada && abelha.x >= linhaChegadaX - 20)
+    if (jogoComecou && !jogoVencido && linhaChegadaLiberada && linhaChegadaX <= abelha.x + 20)
     {
         jogoVencido = true;
         jogoComecou = false;
+        aguardandoNome = true;
+        nomeJogador[0] = '\0';
+        nomeJogadorTamanho = 0;
     }
 
     // --- ANIMAÇÃO ET ---
@@ -217,8 +291,23 @@ void DrawSubJogo(void)
     DesenharInimigos(inimigos, frameEt);
 
     if (jogoVencido) {
-        DrawRectangle(0, screenHeight / 2 - 60, screenWidth, 120, Fade(BLACK, 0.75f));
-        DrawText("PARABENS VOCE VENCEU O JOGO", 360, screenHeight / 2 - 15, 30, YELLOW);
+        DrawRectangle(0, 0, screenWidth, screenHeight, Fade(BLACK, 0.92f));
+
+        int tituloLargura = MeasureText("PARABENS VOCE VENCEU O JOGO", 30);
+        int instrucaoLargura = MeasureText("DIGITE SEU NOME E APERTE ENTER PARA SALVAR NO RANKING", 24);
+        char nomeTexto[80];
+        snprintf(nomeTexto, sizeof(nomeTexto), "NOME: %s", nomeJogadorTamanho > 0 ? nomeJogador : "");
+        int nomeLargura = MeasureText(nomeTexto, 28);
+
+        DrawText("PARABENS VOCE VENCEU O JOGO", (screenWidth - tituloLargura) / 2, screenHeight / 2 - 70, 30, YELLOW);
+        DrawText("DIGITE SEU NOME E APERTE ENTER PARA SALVAR NO RANKING", (screenWidth - instrucaoLargura) / 2, screenHeight / 2 - 20, 24, WHITE);
+        DrawText(nomeTexto, (screenWidth - nomeLargura) / 2, screenHeight / 2 + 25, 28, GREEN);
+
+        if (rankingSalvo)
+        {
+            int rankingLargura = MeasureText("RANKING ATUALIZADO", 22);
+            DrawText("RANKING ATUALIZADO", (screenWidth - rankingLargura) / 2, screenHeight / 2 + 72, 22, LIME);
+        }
     }
 }
 
@@ -236,4 +325,12 @@ void UnloadSubJogo(void)
     UnloadTexture(et2);
     UnloadTexture(et3);
 
+    LiberarRanking(rankingLista);
+    rankingLista = NULL;
+
+}
+
+bool SubJogoFoiVencido(void)
+{
+    return jogoVencido;
 }

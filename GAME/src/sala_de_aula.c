@@ -58,24 +58,35 @@ void UpdateSalaDeAula(float deltaTime) {
         return; 
     }
 
-    UpdateProfessora(&professora, deltaTime);
     UpdateSubJogo(); 
 
+    if (!SubJogoFoiVencido())
+    {
+        UpdateProfessora(&professora, deltaTime);
     if (IsKeyDown(KEY_SPACE)) {
         tabletLevantado = true;
         posicaoSubJogo = posicaoBase;     
     } else{
         tabletLevantado = false;
-        posicaoSubJogo = posicaoAbaixado; 
-        posicaoSubJogo = posicaoBase;     
-        tabletLevantado = true;
-
-        posicaoSubJogo = posicaoAbaixado; 
-        tabletLevantado = false;
+        posicaoSubJogo = posicaoAbaixado;
     }
 
-    if (professora.estadoAtual == PROFE_OLHANDO && tabletLevantado) {
-        gameOverPrincipal = true;
+        if (IsKeyDown(KEY_SPACE)) {
+            posicaoSubJogo = posicaoBase;     
+            tabletLevantado = true;
+        } else {
+            posicaoSubJogo = posicaoAbaixado; 
+            tabletLevantado = false;
+        }
+
+        if (professora.estadoAtual == PROFE_OLHANDO && tabletLevantado) {
+            gameOverPrincipal = true;
+        }
+    }
+    else
+    {
+        tabletLevantado = true;
+        posicaoSubJogo = posicaoBase;
     }
 
     // ==========================================
