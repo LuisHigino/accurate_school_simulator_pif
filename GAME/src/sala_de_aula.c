@@ -7,10 +7,15 @@ static Texture2D backgroundAula;
 static Texture2D tabletTexture;
 static Texture2D jumpscareTexture1;
 static Texture2D jumpscareTexture2;
+static Texture2D alunoIdleTexture1;
+static Texture2D alunoIdleTexture2;
+static Texture2D alunoIdleTexture3;
 static Professora professora;
 static RenderTexture2D telaSubJogo;
 static float gameOverJumpscareTimer = 0.0f;
 static bool gameOverJumpscareFrame = false;
+static float alunoIdleTimer = 0.0f;
+static int alunoIdleFrame = 0;
 
 
 //AJEITAR POSIÇÃO DO TABLET
@@ -29,11 +34,16 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     tabletTexture = LoadTexture("GAME/assets/images/Tablet.png");
     jumpscareTexture1 = LoadTexture("GAME/assets/images/professora_jumpscare1.png");
     jumpscareTexture2 = LoadTexture("GAME/assets/images/professora_jumpscare2.png");
+    alunoIdleTexture1 = LoadTexture("GAME/assets/images/aluno_idle1.png");
+    alunoIdleTexture2 = LoadTexture("GAME/assets/images/aluno_idle2.png");
+    alunoIdleTexture3 = LoadTexture("GAME/assets/images/aluno_idle3.png");
     
     // 2. Inicializa a professora em posição maior e um pouco mais à esquerda
     InitProfessora(&professora, dificuldadeProfessora, (Vector2){ -40, 40 });
     gameOverJumpscareTimer = 0.0f;
     gameOverJumpscareFrame = false;
+    alunoIdleTimer = 0.5f;
+    alunoIdleFrame = 0;
                                                             //horizontal/vertical
                                                         // ++ = direita / ++ = cima                                
     // 3. Inicializa o subjogo virtual do Gnomo/Abelha
@@ -56,6 +66,12 @@ void UpdateSalaDeAula(float deltaTime) {
             InitSalaDeAula(professora.dificuldade); 
         }
         return; 
+    }
+
+    alunoIdleTimer += deltaTime;
+    if (alunoIdleTimer >= 0.25f) {
+        alunoIdleTimer = 0.0f;
+        alunoIdleFrame = (alunoIdleFrame + 1) % 3;
     }
 
     UpdateSubJogo(); 
@@ -113,6 +129,18 @@ void DrawSalaDeAula(void) {
         DrawRectangle(0, 0, 1920, 1080, DARKGRAY);
     }
 
+    // Desenha o aluno animado em loop de idle
+    Texture2D alunoTexture = alunoIdleTexture1;
+    switch (alunoIdleFrame) {
+        case 1: alunoTexture = alunoIdleTexture2; break;
+        case 2: alunoTexture = alunoIdleTexture3; break;
+    }
+    if (alunoTexture.width > 0) {    
+        DrawTextureEx(alunoTexture, (Vector2){ 0, 0 }, 0.0f, 12.0f, WHITE);
+                                        //horizontal/vertical
+                                    // ++ = direita / ++ = baixo
+    }
+
     // Desenha a Professora (muda de cor dependendo do estado)
     DrawProfessora(&professora);
 
@@ -164,6 +192,9 @@ void UnloadSalaDeAula(void) {
     UnloadTexture(tabletTexture);
     UnloadTexture(jumpscareTexture1);
     UnloadTexture(jumpscareTexture2);
+    UnloadTexture(alunoIdleTexture1);
+    UnloadTexture(alunoIdleTexture2);
+    UnloadTexture(alunoIdleTexture3);
     UnloadProfessora(&professora);
     UnloadSubJogo();
     UnloadRenderTexture(telaSubJogo);
