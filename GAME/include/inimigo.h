@@ -19,7 +19,7 @@ typedef struct {
 } Inimigo;
 
 // Funções para gerenciar o "exército" de inimigos
-void InitInimigos(Inimigo inimigos[], int quantidadeAtiva, int screenWidth);
+void InitInimigos(Inimigo inimigos[], int quantidadeAtiva, int screenWidth, int dificuldade);
 
 void AtualizarInimigos(Inimigo inimigos[], int screenWidth);
 

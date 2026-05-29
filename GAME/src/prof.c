@@ -1,5 +1,23 @@
 #include "prof.h"
 
+static float IntervaloAcaoPorDificuldade(int dificuldade) {
+    switch (dificuldade) {
+        case 1: return 6.0f;
+        case 2: return 5.0f;
+        case 3: return 4.5f;
+        default: return 5.0f;
+    }
+}
+
+static int ChanceVirarPorDificuldade(int dificuldade) {
+    switch (dificuldade) {
+        case 1: return 8;
+        case 2: return 12;
+        case 3: return 14;
+        default: return 10;
+    }
+}
+
 void InitProfessora(Professora *prof, int dificuldadeEscolhida, Vector2 posInicial) {
     prof->estadoAtual = PROFE_ESCREVENDO;
     prof->dificuldade = dificuldadeEscolhida;
@@ -27,13 +45,11 @@ void UpdateProfessora(Professora *prof, float deltaTime) {
         
         case PROFE_ESCREVENDO:
 
-            if (prof->timerAcao >= 5.0f) {
+            if (prof->timerAcao >= IntervaloAcaoPorDificuldade(prof->dificuldade)) {
                 prof->timerAcao = 0.0f;
 
                 int dado = GetRandomValue(0, 40);
-                
-
-                int chanceVira = prof->dificuldade * 10; 
+                int chanceVira = ChanceVirarPorDificuldade(prof->dificuldade);
 
 
                 if (dado <= chanceVira) {

@@ -2,6 +2,16 @@
 #include "constantes.h"
 
 
+static int VelocidadePorDificuldade(int dificuldade) {
+    switch (dificuldade) {
+        case 1: return 8;
+        case 2: return 10;
+        case 3: return 11;
+        default: return 10;
+    }
+}
+
+
 
 int SortearFaixa(void) {
     int sorteio = GetRandomValue(0, 2);
@@ -10,14 +20,14 @@ int SortearFaixa(void) {
     return BAIXO;
 }
 
-void InitInimigos(Inimigo inimigos[], int quantidadeAtiva, int screenWidth) {
+void InitInimigos(Inimigo inimigos[], int quantidadeAtiva, int screenWidth, int dificuldade) {
     for (int i = 0; i < MAX_INIMIGOS; i++) {
         if (i < quantidadeAtiva) {
             inimigos[i].ativo = true;
             // Posição inicial randômica para cada um não nascer grudado
             inimigos[i].x = screenWidth + (i * 300);
             inimigos[i].y = SortearFaixa();
-            inimigos[i].velocidade = 10;
+            inimigos[i].velocidade = VelocidadePorDificuldade(dificuldade);
         } else {
             inimigos[i].ativo = false; // Deixa desativado os que sobrarem
         }

@@ -115,7 +115,7 @@ void InitSubJogo(void)
     SetTextureFilter(et2, TEXTURE_FILTER_POINT);
     SetTextureFilter(et3, TEXTURE_FILTER_POINT);
 
-    InitInimigos(inimigos, 0, screenWidth);
+    InitInimigos(inimigos, 0, screenWidth, GetDificuldadeSala());
     
     // Garante que o jogo comece resetado
     jogoComecou = false;
@@ -226,7 +226,7 @@ void UpdateSubJogo(void)
         abelha.x = 120;
         abelha.lane = 1;
 
-        InitInimigos(inimigos, 3, screenWidth);
+        InitInimigos(inimigos, 3, screenWidth, GetDificuldadeSala());
     }
 
     // --- ATUALIZAR GNOMO/ABELHA ---
