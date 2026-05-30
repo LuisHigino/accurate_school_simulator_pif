@@ -3,7 +3,6 @@
 
 #include "raylib.h"
 
-
 void InitSalaDeAula(int dificuldadeProfessora);
 void UpdateSalaDeAula(float deltaTime);
 void DrawSalaDeAula(void);

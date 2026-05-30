@@ -24,7 +24,6 @@ typedef struct {
     Texture2D olhandoTexture;
 } Professora;
 
-
 void InitProfessora(Professora *prof, int dificuldadeEscolhida, Vector2 posInicial);
 void UpdateProfessora(Professora *prof, float deltaTime);
 void DrawProfessora(Professora *prof);

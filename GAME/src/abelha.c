@@ -43,7 +43,6 @@ void AtualizarAbelha(Abelha *abelha, float deltaTime, int screenWidth) {
 
 void DesenharAbelha(Abelha *abelha)
 {
-    // Trava de segurança da Abelha/Gnomo
     if (abelha->textura.width > 0) {
         DrawTexturePro(
             abelha->textura,
@@ -52,13 +51,10 @@ void DesenharAbelha(Abelha *abelha)
             (Vector2){0, 0}, 0.0f, WHITE
         );
     } else {
-        // Se falhar, desenha o gnomo como um quadrado azul claro
         DrawRectangle(abelha->x, abelha->y - 32, 64, 64, SKYBLUE);
         DrawText("GNOMO", abelha->x, abelha->y - 40, 10, WHITE);
     }
 }
-
-// A FUNÇÃO QUE HAVIA SUMIDO VOLTOU AQUI:
 Rectangle GetHitboxAbelha(Abelha *abelha)
 {
     Rectangle hitbox = {

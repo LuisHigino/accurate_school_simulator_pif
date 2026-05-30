@@ -5,7 +5,6 @@
 
 #include <stddef.h>
 
-// Funções matemáticas simples para descobrirmos o tamanho do monitor
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
 
@@ -82,15 +81,12 @@ static void DesenharRankingNaTela(Ranking *lista, int posX, int posY)
 
 
 int main(void) {
-    // 1. Avisa a Raylib que a janela pode ser redimensionada e deve abrir maximizada
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
 
-    // 2. Inicia a janela com um tamanho seguro.
     InitWindow(1280, 720, "Jogo Principal - Sala de Aula");
     InitAudioDevice();
     SetTargetFPS(60);
 
-    // 3. A MÁGICA: O "Canvas" Virtual
     int virtualWidth = 1920;
     int virtualHeight = 1080;
     RenderTexture2D canvas = LoadRenderTexture(virtualWidth, virtualHeight);
@@ -144,7 +140,7 @@ int main(void) {
         {
             UpdateSalaDeAula(GetFrameTime());
 
-            // A NOVIDADE DO SEU GRUPO MANTIDA AQUI!
+                if (SubJogoConsumirSolicitacaoRetornoMenu())
             if (SubJogoConsumirSolicitacaoRetornoMenu())
             {
                 telaAtual = TELA_MENU;

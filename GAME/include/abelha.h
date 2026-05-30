@@ -14,13 +14,9 @@ typedef struct {
 } Abelha;
 
 void InitAbelha(Abelha *abelha, Texture2D textura, int lane);
-
 void AtualizarAbelha(Abelha *abelha, float deltaTime, int screenWidth);
-
 void DesenharAbelha(Abelha *abelha);
-
 Rectangle GetHitboxAbelha(Abelha *abelha);
-
 void UnloadAbelha(Abelha *abelha);
 
 #endif

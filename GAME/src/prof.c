@@ -42,37 +42,23 @@ void UpdateProfessora(Professora *prof, float deltaTime) {
     }
 
     switch (prof->estadoAtual) {
-        
         case PROFE_ESCREVENDO:
-
             if (prof->timerAcao >= IntervaloAcaoPorDificuldade(prof->dificuldade)) {
                 prof->timerAcao = 0.0f;
 
                 int dado = GetRandomValue(0, 40);
                 int chanceVira = ChanceVirarPorDificuldade(prof->dificuldade);
 
-
-                if (dado <= chanceVira) {
-                    prof->estadoAtual = PROFE_ALERTA;
-                }
-
+                if (dado <= chanceVira) prof->estadoAtual = PROFE_ALERTA;
             }
             break;
 
         case PROFE_ALERTA:
-
-            if (prof->timerAcao >= 1.0f) {
-                prof->timerAcao = 0.0f;
-                prof->estadoAtual = PROFE_OLHANDO;
-            }
+            if (prof->timerAcao >= 1.0f) { prof->timerAcao = 0.0f; prof->estadoAtual = PROFE_OLHANDO; }
             break;
 
         case PROFE_OLHANDO:
-
-            if (prof->timerAcao >= 2.0f) {
-                prof->timerAcao = 0.0f;
-                prof->estadoAtual = PROFE_ESCREVENDO;
-            }
+            if (prof->timerAcao >= 2.0f) { prof->timerAcao = 0.0f; prof->estadoAtual = PROFE_ESCREVENDO; }
             break;
     }
 }

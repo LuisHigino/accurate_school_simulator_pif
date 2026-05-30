@@ -4,8 +4,7 @@
 #include "raylib.h"
 #include "constantes.h"
 
-// Definimos um limite máximo de inimigos na tela de uma vez
-#define MAX_INIMIGOS 10 
+#define MAX_INIMIGOS 10
 
 typedef struct {
     Texture2D textura;
@@ -15,10 +14,9 @@ typedef struct {
     int cima;
     int meio;
     int baixo;
-    bool ativo; // Se for true, o inimigo aparece e interage. Se false, ele é ignorado.
+    bool ativo;
 } Inimigo;
 
-// Funções para gerenciar o "exército" de inimigos
 void InitInimigos(Inimigo inimigos[], int quantidadeAtiva, int screenWidth, int dificuldade);
 
 void AtualizarInimigos(Inimigo inimigos[], int screenWidth);

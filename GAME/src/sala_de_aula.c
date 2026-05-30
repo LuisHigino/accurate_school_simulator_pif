@@ -3,7 +3,6 @@
 #include "submain.h"
 #include "raylib.h" // Garante o acesso às funções de áudio da Raylib
 
-// Variáveis internas (visíveis apenas dentro deste arquivo)
 static Texture2D backgroundAula;
 static Texture2D tabletTexture;
 static Texture2D jumpscareTexture1;
@@ -18,12 +17,8 @@ static bool gameOverJumpscareFrame = false;
 static float alunoIdleTimer = 0.0f;
 static int alunoIdleFrame = 0;
 
-// ==========================================
-// RECUPERAMOS A VARIÁVEL DE TEMPO AQUI
-// ==========================================
 static float tempoSobrevivencia = 0.0f;
 
-// VARIÁVEIS DE ÁUDIO
 static Sound somAbelha;
 static Sound somEscola;
 static Sound somGiz;
@@ -33,12 +28,10 @@ static Sound somMorte;
 static Sound somVitoria;
 static Sound somVoo;
 
-// Controladores de estado para evitar que o som fique triggando em loop infinito
 static bool somMorteTocado = false;
 static bool somVitoriaTocado = false;
 static bool somJumpscareTocado = false;
 
-// AJEITAR POSIÇÃO DO TABLET
 static Vector2 posicaoSubJogo = { 320, 320 };
 static Vector2 posicaoBase = { 320, 320 };
 static Vector2 posicaoAbaixado = { 320, 985 };
@@ -47,12 +40,10 @@ static bool tabletLevantado = true;
 static bool gameOverPrincipal = false;
 
 void InitSalaDeAula(int dificuldadeProfessora) {
-    // Inicializa o dispositivo de áudio (caso ainda não tenha sido inicializado na main principal)
     if (!IsAudioDeviceReady()) {
         InitAudioDevice();
     }
 
-    // 1. Carrega o fundo da sala
     backgroundAula = LoadTexture("GAME/assets/images/backgroundAula.png");
     tabletTexture = LoadTexture("GAME/assets/images/Tablet.png");
     jumpscareTexture1 = LoadTexture("GAME/assets/images/professora_jumpscare1.png");
@@ -61,7 +52,6 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     alunoIdleTexture2 = LoadTexture("GAME/assets/images/aluno_idle2.png");
     alunoIdleTexture3 = LoadTexture("GAME/assets/images/aluno_idle3.png");
     
-    // 2. Carrega os Sons (Ajuste o caminho das pastas se necessário)
     somAbelha = LoadSound("GAME/assets/music/som_abelha.mp3");
     somEscola = LoadSound("GAME/assets/sounds/som_escola.mp3");
     somGiz = LoadSound("GAME/assets/sounds/som_giz.mp3");
@@ -71,26 +61,22 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     somVitoria = LoadSound("GAME/assets/music/som_vitoria.mp3");
     somVoo = LoadSound("GAME/assets/sounds/som_voo.mp3");
 
-    // Ajuste de volumes iniciais baseados na sua descrição
     SetSoundVolume(somEscola, 0.6f);
     SetSoundVolume(somAbelha, 0.4f);
     SetSoundVolume(somLapis, 0.25f); // Mais baixo que o da abelha
     SetSoundVolume(somGiz, 0.5f);
     SetSoundVolume(somJumpscare, 0.8f);
 
-    // Começa a tocar as trilhas de fundo em loop
     PlaySound(somEscola);
     PlaySound(somAbelha);
     PlaySound(somLapis);
     
-    // 3. Inicializa a professora
     InitProfessora(&professora, dificuldadeProfessora, (Vector2){ -40, 40 });
     gameOverJumpscareTimer = 0.0f;
     gameOverJumpscareFrame = false;
     alunoIdleTimer = 0.5f;
     alunoIdleFrame = 0;
                                                                                                 
-    // 4. Inicializa o subjogo virtual do Gnomo/Abelha
     telaSubJogo = LoadRenderTexture(1280, 720);
     InitSubJogo();
     
@@ -98,7 +84,6 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     tabletLevantado = true;
     tempoSobrevivencia = 0.0f; // <-- Resetando o tempo!
 
-    // Reseta as flags de controle de som de fim de jogo
     somMorteTocado = false;
     somVitoriaTocado = false;
     somJumpscareTocado = false;
