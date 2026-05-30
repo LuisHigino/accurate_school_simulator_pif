@@ -4,7 +4,7 @@
 #include "inimigo.h"
 #include "constantes.h"
 #include "ranking.h"
-#include "sala_de_aula.h" // <-- IMPORTANTE: Traz as funções de tempo e dificuldade da sala!
+#include "sala_de_aula.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -23,12 +23,12 @@ static bool solicitarRetornoMenu = false;
 static bool retornoLiberadoAposSalvar = false;
 
 static float tempoDecorrido = 0.0f;
-static float linhaChegadaX = 1280 + 200; // 1280 é o screenWidth fixo aqui
+static float linhaChegadaX = 1280 + 200;
 static char nomeJogador[50] = { 0 };
 static int nomeJogadorTamanho = 0;
 static Ranking *rankingLista = NULL;
 
-static int totalDerrotasAbelha = 0; // <-- NOSSA VARIÁVEL RESTAURADA!
+static int totalDerrotasAbelha = 0;
 
 static Texture2D background;
 static Texture2D texturaAbelha1;
@@ -37,7 +37,8 @@ static Texture2D texturaAbelha3;
 static Texture2D et1;
 static Texture2D et2;
 static Texture2D et3;
-static Texture2D frameEt; // Guardará o frame atual da animação
+static Texture2D frameEt;
+static Sound somMorte;
 
 static int frameAbelhaAtual = 0;
 static int timerAbelhaAnimacao = 0;
@@ -72,35 +73,6 @@ static void ReiniciarEstadoSubJogo(void)
     totalDerrotasAbelha = 0;
 }
 
-static Vector2 MouseParaCoordenadaSubJogo(void)
-{
-    const float virtualWidth = 1920.0f;
-    const float virtualHeight = 1080.0f;
-    const float subJogoOffsetX = 320.0f;
-    const float subJogoOffsetY = 320.0f;
-
-    float scale = (float)GetScreenWidth() / virtualWidth;
-    float scaleAltura = (float)GetScreenHeight() / virtualHeight;
-    if (scaleAltura < scale)
-    {
-        scale = scaleAltura;
-    }
-
-    float offsetX = ((float)GetScreenWidth() - (virtualWidth * scale)) * 0.5f;
-    float offsetY = ((float)GetScreenHeight() - (virtualHeight * scale)) * 0.5f;
-
-    Vector2 mouseTela = GetMousePosition();
-    Vector2 mouseVirtual = {
-        (mouseTela.x - offsetX) / scale,
-        (mouseTela.y - offsetY) / scale
-    };
-
-    return (Vector2){
-        mouseVirtual.x - subJogoOffsetX,
-        mouseVirtual.y - subJogoOffsetY
-    };
-}
-
 void InitSubJogo(void)
 {
     if (rankingLista != NULL) {
@@ -119,6 +91,10 @@ void InitSubJogo(void)
     et1 = CarregarTexturaComFiltro("GAME/assets/images/et1.png");
     et2 = CarregarTexturaComFiltro("GAME/assets/images/et2.png");
     et3 = CarregarTexturaComFiltro("GAME/assets/images/et3.png");
+
+    somMorte = LoadSound("GAME/assets/sounds/som_morte.mp3");
+
+    SetSoundVolume(somMorte, 0.2f);
 
     InitInimigos(inimigos, 0, screenWidth, GetDificuldadeSala());
 
@@ -154,18 +130,19 @@ void UpdateSubJogo(void)
         }
 
         if (rankingSalvo) {
-            if (!retornoLiberadoAposSalvar) retornoLiberadoAposSalvar = true;
+            if (!retornoLiberadoAposSalvar) {
+                retornoLiberadoAposSalvar = true;
+            }
             else {
-                Vector2 mouseSubJogo = MouseParaCoordenadaSubJogo();
-                bool cliqueBotao = IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouseSubJogo, botaoVoltarMenu);
-                if (cliqueBotao || teclaPressionada != 0) solicitarRetornoMenu = true;
+                if (IsKeyPressed(KEY_ENTER)) {
+                    solicitarRetornoMenu = true;
+                }
             }
         }
 
         return;
     }
 
-    // --- COMEÇAR JOGO ---
     if (!jogoComecou && teclaPressionada != 0) {
         jogoComecou = true;
         jogoVencido = false;
@@ -179,7 +156,6 @@ void UpdateSubJogo(void)
         InitInimigos(inimigos, 3, screenWidth, GetDificuldadeSala());
     }
 
-    // --- ATUALIZAR GNOMO/ABELHA ---
 
     timerAbelhaAnimacao++;
     if (timerAbelhaAnimacao >= 10) {
@@ -201,7 +177,6 @@ void UpdateSubJogo(void)
         AtualizarAbelha(&abelha, GetFrameTime(), screenWidth);
     }
 
-    // --- INIMIGOS ---
     if (jogoComecou && !jogoVencido) {
         AtualizarInimigos(inimigos, screenWidth);
     }
@@ -215,10 +190,10 @@ void UpdateSubJogo(void)
             linhaChegadaLiberada = false;
             tempoDecorrido = 0.0f;
             linhaChegadaX = screenWidth + 200;
+            if (!IsSoundPlaying(somMorte)) PlaySound(somMorte);
         }
     }
 
-    // --- VITÓRIA ---
     if (jogoComecou && !jogoVencido && linhaChegadaLiberada && linhaChegadaX <= abelha.x + 20) {
         jogoVencido = true;
         jogoComecou = false;
@@ -274,7 +249,7 @@ static void DesenharFimDeJogo(void)
     DrawRectangleRec(botaoVoltarMenu, Fade(WHITE, 0.12f));
     DrawRectangleLinesEx(botaoVoltarMenu, 1.0f, LIGHTGRAY);
 
-    const char *textoBotao = "VOLTAR AO MENU PRINCIPAL";
+    const char *textoBotao = "APERTE ENTER PARA VOLTAR AO MENU";
     int textoLargura = MeasureText(textoBotao, 20);
     DrawText(textoBotao, (int)(botaoVoltarMenu.x + (botaoVoltarMenu.width - textoLargura) * 0.5f), (int)botaoVoltarMenu.y + 10, 20, WHITE);
 }
@@ -338,9 +313,6 @@ bool SubJogoConsumirSolicitacaoRetornoMenu(void)
     return false;
 }
 
-// ============================================================================
-// FUNÇÃO EXTRATORA DE MORTES QUE O GIT TINHA APAGADO!
-// ============================================================================
 int GetDerrotasAbelha(void) {
     return totalDerrotasAbelha;
 }

@@ -1,23 +1,5 @@
 #include "prof.h"
 
-static float IntervaloAcaoPorDificuldade(int dificuldade) {
-    switch (dificuldade) {
-        case 1: return 6.0f;
-        case 2: return 5.0f;
-        case 3: return 4.5f;
-        default: return 5.0f;
-    }
-}
-
-static int ChanceVirarPorDificuldade(int dificuldade) {
-    switch (dificuldade) {
-        case 1: return 8;
-        case 2: return 12;
-        case 3: return 14;
-        default: return 10;
-    }
-}
-
 void InitProfessora(Professora *prof, int dificuldadeEscolhida, Vector2 posInicial) {
     prof->estadoAtual = PROFE_ESCREVENDO;
     prof->dificuldade = dificuldadeEscolhida;
@@ -41,24 +23,49 @@ void UpdateProfessora(Professora *prof, float deltaTime) {
         prof->idleFrame = 1 - prof->idleFrame;
     }
 
+    float tempoEscrevendo = 5.0f;
+    float tempoOlhando = 1.5f;
+
+    if (prof->dificuldade == 1) {
+        tempoEscrevendo = 6.0f;
+        tempoOlhando = 1.0f;
+    } 
+    else if (prof->dificuldade == 2) {
+        tempoEscrevendo = 5.0f;
+        tempoOlhando = 1.5f;
+    } 
+    else if (prof->dificuldade == 3) {
+        tempoEscrevendo = 4.5f;
+        tempoOlhando = 2.0f;
+    }
+
     switch (prof->estadoAtual) {
+        
         case PROFE_ESCREVENDO:
-            if (prof->timerAcao >= IntervaloAcaoPorDificuldade(prof->dificuldade)) {
+            if (prof->timerAcao >= tempoEscrevendo) {
                 prof->timerAcao = 0.0f;
 
-                int dado = GetRandomValue(0, 40);
-                int chanceVira = ChanceVirarPorDificuldade(prof->dificuldade);
+                int dado = GetRandomValue(0, 35);
+                int chanceVira = prof->dificuldade * 10; 
 
-                if (dado <= chanceVira) prof->estadoAtual = PROFE_ALERTA;
+                if (dado <= chanceVira) {
+                    prof->estadoAtual = PROFE_ALERTA;
+                }
             }
             break;
 
         case PROFE_ALERTA:
-            if (prof->timerAcao >= 1.0f) { prof->timerAcao = 0.0f; prof->estadoAtual = PROFE_OLHANDO; }
+            if (prof->timerAcao >= 1.0f) {
+                prof->timerAcao = 0.0f;
+                prof->estadoAtual = PROFE_OLHANDO;
+            }
             break;
 
         case PROFE_OLHANDO:
-            if (prof->timerAcao >= 2.0f) { prof->timerAcao = 0.0f; prof->estadoAtual = PROFE_ESCREVENDO; }
+            if (prof->timerAcao >= tempoOlhando) {
+                prof->timerAcao = 0.0f;
+                prof->estadoAtual = PROFE_ESCREVENDO;
+            }
             break;
     }
 }
@@ -78,38 +85,15 @@ void DrawProfessora(Professora *prof) {
             break;
     }
 
-    if (textureToDraw.width > 0) {
-        float scale = 12.0f;
-        DrawTexturePro(
-            textureToDraw,
-            (Rectangle){ 0.0f, 0.0f, (float)textureToDraw.width, (float)textureToDraw.height },
-            (Rectangle){ prof->posicao.x, prof->posicao.y, (float)textureToDraw.width * scale, (float)textureToDraw.height * scale },
-            (Vector2){ 0.0f, 0.0f },
-            0.0f,
-            WHITE
-        );
-    } else {
-        Rectangle corpo = { prof->posicao.x, prof->posicao.y, 100, 250 };
-
-        switch (prof->estadoAtual) {
-            case PROFE_ESCREVENDO:
-                DrawRectangleRec(corpo, DARKBLUE);
-                DrawText("ESCREVENDO...", prof->posicao.x - 20, prof->posicao.y - 30, 20, BLUE);
-                break;
-            case PROFE_ALERTA:
-                DrawRectangleRec(corpo, YELLOW);
-                DrawText("!?!?", prof->posicao.x + 25, prof->posicao.y - 50, 40, RED);
-                break;
-            case PROFE_OLHANDO:
-                DrawRectangleRec(corpo, RED);
-                DrawText("VIGIANDO!", prof->posicao.x - 10, prof->posicao.y - 30, 20, MAROON);
-                DrawCircle(prof->posicao.x + 30, prof->posicao.y + 40, 15, WHITE);
-                DrawCircle(prof->posicao.x + 70, prof->posicao.y + 40, 15, WHITE);
-                DrawCircle(prof->posicao.x + 30, prof->posicao.y + 40, 5, BLACK);
-                DrawCircle(prof->posicao.x + 70, prof->posicao.y + 40, 5, BLACK);
-                break;
-        }
-    }
+    float scale = 12.0f;
+    DrawTexturePro(
+        textureToDraw,
+        (Rectangle){ 0.0f, 0.0f, (float)textureToDraw.width, (float)textureToDraw.height },
+        (Rectangle){ prof->posicao.x, prof->posicao.y, (float)textureToDraw.width * scale, (float)textureToDraw.height * scale },
+        (Vector2){ 0.0f, 0.0f },
+        0.0f,
+        WHITE
+    );
 }
 
 void UnloadProfessora(Professora *prof) {

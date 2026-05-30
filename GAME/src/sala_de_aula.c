@@ -1,7 +1,7 @@
 #include "sala_de_aula.h"
 #include "prof.h"
 #include "submain.h"
-#include "raylib.h" // Garante o acesso às funções de áudio da Raylib
+#include "raylib.h"
 
 static Texture2D backgroundAula;
 static Texture2D tabletTexture;
@@ -57,15 +57,15 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     somGiz = LoadSound("GAME/assets/sounds/som_giz.mp3");
     somJumpscare = LoadSound("GAME/assets/sounds/som_jumpscare.mp3");
     somLapis = LoadSound("GAME/assets/sounds/som_lapis.mp3");
-    somMorte = LoadSound("GAME/assets/sounds/som_morte.mp3");
     somVitoria = LoadSound("GAME/assets/music/som_vitoria.mp3");
     somVoo = LoadSound("GAME/assets/sounds/som_voo.mp3");
 
-    SetSoundVolume(somEscola, 0.6f);
+    SetSoundVolume(somEscola, 0.4f);
     SetSoundVolume(somAbelha, 0.4f);
-    SetSoundVolume(somLapis, 0.25f); // Mais baixo que o da abelha
-    SetSoundVolume(somGiz, 0.5f);
+    SetSoundVolume(somLapis, 0.25f);
+    SetSoundVolume(somGiz, 0.25f);
     SetSoundVolume(somJumpscare, 0.8f);
+    SetSoundVolume(somVoo, 0.6f);
 
     PlaySound(somEscola);
     PlaySound(somAbelha);
@@ -82,7 +82,7 @@ void InitSalaDeAula(int dificuldadeProfessora) {
     
     gameOverPrincipal = false;
     tabletLevantado = true;
-    tempoSobrevivencia = 0.0f; // <-- Resetando o tempo!
+    tempoSobrevivencia = 0.0f;
 
     somMorteTocado = false;
     somVitoriaTocado = false;
@@ -90,14 +90,11 @@ void InitSalaDeAula(int dificuldadeProfessora) {
 }
 
 void UpdateSalaDeAula(float deltaTime) {
-    // --- ESTADO 1: GAME OVER (LEVOU JUMPSCARE) ---
     if (gameOverPrincipal) {
-        // Para os sons de fundo e jogo se ainda estiverem tocando
         if (IsSoundPlaying(somAbelha)) StopSound(somAbelha);
         if (IsSoundPlaying(somLapis)) StopSound(somLapis);
         if (IsSoundPlaying(somGiz)) StopSound(somGiz);
 
-        // Toca o Jumpscare apenas uma vez
         if (!somJumpscareTocado) {
             PlaySound(somJumpscare);
             somJumpscareTocado = true;
@@ -110,14 +107,12 @@ void UpdateSalaDeAula(float deltaTime) {
         }
 
         if (IsKeyPressed(KEY_SPACE)) { 
-            // Para o som de jumpscare caso o jogador reinicie rápido
             StopSound(somJumpscare);
             InitSalaDeAula(professora.dificuldade); 
         }
         return; 
     }
 
-    // Mantém as músicas de fundo tocando em loop se pararem (enquanto o jogo roda normal)
     if (!IsSoundPlaying(somEscola)) PlaySound(somEscola);
     if (!IsSoundPlaying(somAbelha)) PlaySound(somAbelha);
     if (!IsSoundPlaying(somLapis)) PlaySound(somLapis);
@@ -130,21 +125,18 @@ void UpdateSalaDeAula(float deltaTime) {
 
     UpdateSubJogo(); 
 
-    // --- ESTADO 2: SE O JOGO AINDA NÃO FOI VENCIDO ---
     if (!SubJogoFoiVencido())
     {
         UpdateProfessora(&professora, deltaTime);
 
-        tempoSobrevivencia += deltaTime; // <-- Voltamos a contar o tempo aqui!
+        tempoSobrevivencia += deltaTime;
 
-        // CONTROLE DO GIZ
         if (professora.estadoAtual != PROFE_OLHANDO) {
             if (!IsSoundPlaying(somGiz)) PlaySound(somGiz);
         } else {
             StopSound(somGiz);
         }
 
-        // CONTROLE DE VOO
         if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN)) {
             PlaySound(somVoo);
         }
@@ -161,18 +153,15 @@ void UpdateSalaDeAula(float deltaTime) {
             gameOverPrincipal = true;
         }
     }
-    // --- ESTADO 3: SE O JOGO FOI VENCIDO ---
     else
     {
         tabletLevantado = true;
         posicaoSubJogo = posicaoBase;
 
-        // Para os sons do gameplay comum
         if (IsSoundPlaying(somAbelha)) StopSound(somAbelha);
         if (IsSoundPlaying(somLapis)) StopSound(somLapis);
         if (IsSoundPlaying(somGiz)) StopSound(somGiz);
 
-        // Toca o som de vitória uma única vez
         if (!somVitoriaTocado) {
             PlaySound(somVitoria);
             somVitoriaTocado = true;
@@ -186,7 +175,6 @@ void UpdateSalaDeAula(float deltaTime) {
 }
 
 void DrawSalaDeAula(void) {
-    // Desenha o background da sala de aula cobrindo toda a tela
     if (backgroundAula.width > 0) {
         DrawTexturePro(
             backgroundAula,
@@ -199,7 +187,6 @@ void DrawSalaDeAula(void) {
         DrawRectangle(0, 0, 1920, 1080, DARKGRAY);
     }
 
-    // Desenha o aluno animado em loop de idle
     Texture2D alunoTexture = alunoIdleTexture1;
     switch (alunoIdleFrame) {
         case 1: alunoTexture = alunoIdleTexture2; break;
@@ -209,10 +196,8 @@ void DrawSalaDeAula(void) {
         DrawTextureEx(alunoTexture, (Vector2){ 0, 0 }, 0.0f, 12.0f, WHITE);
     }
 
-    // Desenha a Professora (muda de cor dependendo do estado)
     DrawProfessora(&professora);
 
-    // Desenha o tablet de fundo
     Rectangle orig = { 0, 0, 1280.0f, -720.0f };
     Rectangle dest = { posicaoSubJogo.x, posicaoSubJogo.y, 1280.0f, 720.0f };
 
@@ -231,7 +216,6 @@ void DrawSalaDeAula(void) {
 
     DrawTexturePro(telaSubJogo.texture, orig, dest, (Vector2){ 0, 0 }, 0.0f, WHITE);
 
-    // Se deu Game Over na sala de aula
     if (gameOverPrincipal) {
         DrawRectangle(0, 0, 1920, 1080, Fade(BLACK, 1.0f));
         Texture2D jumpscare = gameOverJumpscareFrame ? jumpscareTexture2 : jumpscareTexture1;
@@ -264,7 +248,6 @@ void UnloadSalaDeAula(void) {
     UnloadTexture(alunoIdleTexture2);
     UnloadTexture(alunoIdleTexture3);
     
-    // DESCARREGA OS SONS DA MEMÓRIA
     UnloadSound(somAbelha);
     UnloadSound(somEscola);
     UnloadSound(somGiz);
@@ -279,9 +262,6 @@ void UnloadSalaDeAula(void) {
     UnloadRenderTexture(telaSubJogo);
 }
 
-// ==========================================
-// FUNÇÕES DO RANKING QUE O GIT TINHA APAGADO
-// ==========================================
 int GetTempoSobrevivencia(void) {
     return (int)tempoSobrevivencia;
 }

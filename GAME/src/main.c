@@ -13,23 +13,6 @@ typedef enum {
     TELA_JOGO = 1
 } TelaAtual;
 
-static Vector2 ConverterMouseParaVirtual(Vector2 mouse, int screenWidth, int screenHeight, int virtualWidth, int virtualHeight)
-{
-    float scale = MIN((float)screenWidth / virtualWidth, (float)screenHeight / virtualHeight);
-    float offsetX = (screenWidth - (virtualWidth * scale)) * 0.5f;
-    float offsetY = (screenHeight - (virtualHeight * scale)) * 0.5f;
-
-    return (Vector2){
-        (mouse.x - offsetX) / scale,
-        (mouse.y - offsetY) / scale
-    };
-}
-
-static bool CliqueNoRetanguloVirtual(Rectangle retanguloVirtual, Vector2 mouseVirtual)
-{
-    return CheckCollisionPointRec(mouseVirtual, retanguloVirtual);
-}
-
 static const char *TextoDificuldade(int dificuldade)
 {
     switch (dificuldade)
@@ -43,30 +26,23 @@ static const char *TextoDificuldade(int dificuldade)
 
 static void DesenharRankingNaTela(Ranking *lista, int posX, int posY)
 {
-    // Aumentamos a largura para 540 para caber a nova coluna confortavelmente
     DrawRectangle(posX - 40, posY, 540, 520, Fade(BLACK, 0.78f));
     DrawRectangleLines(posX - 40, posY, 540, 520, GOLD);
 
     DrawText("RANKING AO VIVO", posX - 14, posY + 20, 34, YELLOW);
     
-    // Cabeçalho das colunas atualizado
     DrawText("NOME      TEMPO      PERDAS      DIF", posX - 14, posY + 70, 22, LIGHTGRAY);
-
     int linha = 0;
     while (lista != NULL && linha < 8)
     {
-        // 1. Nome do Jogador
         DrawText(TextFormat("%d. %s", linha + 1, lista->nome), posX - 14, posY + 110 + (linha * 48), 24, WHITE);
         
-        // 2. Tempo Formatado (M:SS)
         int min = lista->dados[0][0] / 60;
         int seg = lista->dados[0][0] % 60;
         DrawText(TextFormat("%d:%02d", min, seg), posX + 150, posY + 110 + (linha * 48), 24, SKYBLUE);
         
-        // 3. NOVA COLUNA: Quantidade de Perdas (dados[1][0])
         DrawText(TextFormat("%d", lista->dados[1][0]), posX + 275, posY + 110 + (linha * 48), 24, RED);
         
-        // 4. Dificuldade em Texto
         DrawText(TextoDificuldade(lista->dados[0][1]), posX + 370, posY + 110 + (linha * 48), 20, ORANGE);
         
         lista = lista->prox;
@@ -79,7 +55,6 @@ static void DesenharRankingNaTela(Ranking *lista, int posX, int posY)
     }
 }
 
-
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
 
@@ -91,46 +66,54 @@ int main(void) {
     int virtualHeight = 1080;
     RenderTexture2D canvas = LoadRenderTexture(virtualWidth, virtualHeight);
     Texture2D menuTexture = LoadTexture("GAME/assets/images/Mainscreen.png");
-
-    TelaAtual telaAtual = TELA_MENU;
-    int dificuldadeSelecionada = 1; // Melhor começar no Fácil (1)
-    bool mostrarRanking = false;
-    bool sairDoJogo = false;
-
     SetTextureFilter(menuTexture, TEXTURE_FILTER_POINT);
 
+    Sound somMover = LoadSound("GAME/assets/sounds/move.mp3");
+    Sound somConfirmar = LoadSound("GAME/assets/sounds/enter.mp3");
+
+
+    TelaAtual telaAtual = TELA_MENU;
+    int dificuldadeSelecionada = 1;
+    bool mostrarRanking = false;
+    bool sairDoJogo = false;
+    
+    int opcaoSelecionada = 0; 
+
     while (!WindowShouldClose() && !sairDoJogo) {
-        // --- ATUALIZAÇÃO (UPDATE) ---
+        
         if (telaAtual == TELA_MENU)
         {
-            Vector2 mouseVirtual = ConverterMouseParaVirtual(GetMousePosition(), GetScreenWidth(), GetScreenHeight(), virtualWidth, virtualHeight);
+            if (IsKeyPressed(KEY_DOWN)) {
+                opcaoSelecionada++;
+                if (opcaoSelecionada > 3) opcaoSelecionada = 0;
+                PlaySound(somMover);
+            }
+            if (IsKeyPressed(KEY_UP)) {
+                opcaoSelecionada--;
+                if (opcaoSelecionada < 0) opcaoSelecionada = 3;
+                PlaySound(somMover);
+            }
 
-            Rectangle botaoIniciar = { 0, 240, 360, 90 };
-            Rectangle botaoDificuldade = { 0, 360, 360, 90 };
-            Rectangle botaoRanking = { 0, 480, 360, 90 };
-            Rectangle botaoSair = { 0, 600, 360, 90 };
-
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            if (IsKeyPressed(KEY_ENTER))
             {
-                if (CliqueNoRetanguloVirtual(botaoIniciar, mouseVirtual))
+                PlaySound(somConfirmar);
+
+                if (opcaoSelecionada == 0)
                 {
                     InitSalaDeAula(dificuldadeSelecionada);
                     telaAtual = TELA_JOGO;
                     mostrarRanking = false;
                 }
-                else if (CliqueNoRetanguloVirtual(botaoDificuldade, mouseVirtual))
+                else if (opcaoSelecionada == 1)
                 {
                     dificuldadeSelecionada++;
-                    if (dificuldadeSelecionada > 3)
-                    {
-                        dificuldadeSelecionada = 1;
-                    }
+                    if (dificuldadeSelecionada > 3) dificuldadeSelecionada = 1;
                 }
-                else if (CliqueNoRetanguloVirtual(botaoRanking, mouseVirtual))
+                else if (opcaoSelecionada == 2)
                 {
                     mostrarRanking = !mostrarRanking;
                 }
-                else if (CliqueNoRetanguloVirtual(botaoSair, mouseVirtual))
+                else if (opcaoSelecionada == 3)
                 {
                     sairDoJogo = true;
                 }
@@ -140,16 +123,16 @@ int main(void) {
         {
             UpdateSalaDeAula(GetFrameTime());
 
-                if (SubJogoConsumirSolicitacaoRetornoMenu())
             if (SubJogoConsumirSolicitacaoRetornoMenu())
             {
+                PlaySound(somConfirmar);
+                
                 telaAtual = TELA_MENU;
                 mostrarRanking = false;
-                UnloadSalaDeAula(); // Descarrega o jogo da memória para não dar erro de áudio quando tentar iniciar de novo
+                UnloadSalaDeAula();
             }
         }
 
-        // --- DESENHO NO CANVAS VIRTUAL (1920x1080) ---
         BeginTextureMode(canvas);
             ClearBackground(BLACK);
 
@@ -172,13 +155,12 @@ int main(void) {
                     DrawText("MENU NAO ENCONTRADO", 120, 120, 40, RED);
                 }
 
-                DrawText("INICIAR", 60, 280, 28, WHITE);
-                DrawText("DIFICULDADE", 60, 400, 28, WHITE);
-                DrawText("RANKING", 60, 520, 28, WHITE);
-                DrawText("SAIR", 60, 640, 28, WHITE);
+                DrawText(opcaoSelecionada == 0 ? "> INICIAR <" : "INICIAR", 60, 280, 28, opcaoSelecionada == 0 ? YELLOW : WHITE);
+                DrawText(opcaoSelecionada == 1 ? "> DIFICULDADE <" : "DIFICULDADE", 60, 400, 28, opcaoSelecionada == 1 ? YELLOW : WHITE);
+                DrawText(opcaoSelecionada == 2 ? "> RANKING <" : "RANKING", 60, 520, 28, opcaoSelecionada == 2 ? YELLOW : WHITE);
+                DrawText(opcaoSelecionada == 3 ? "> SAIR <" : "SAIR", 60, 640, 28, opcaoSelecionada == 3 ? YELLOW : WHITE);
 
-                // Dificuldade sempre visível
-                DrawText(TextFormat("DIFICULDADE: %s", TextoDificuldade(dificuldadeSelecionada)), 620, 900, 30, YELLOW);
+                DrawText(TextFormat("%s", TextoDificuldade(dificuldadeSelecionada)), 300, 400, 28, YELLOW);
 
                 if (mostrarRanking)
                 {
@@ -194,7 +176,6 @@ int main(void) {
             }
         EndTextureMode();
 
-        // --- DESENHO FINAL NA TELA DO JOGADOR ---
         BeginDrawing();
             ClearBackground(BLACK); 
 
@@ -213,11 +194,12 @@ int main(void) {
         EndDrawing();
     }
 
-    // Limpeza da memória
     UnloadRenderTexture(canvas);
     UnloadTexture(menuTexture);
     
-    // Descarrega apenas se o jogo fechou enquanto a fase estava rodando
+    UnloadSound(somMover);
+    UnloadSound(somConfirmar);
+
     if (telaAtual == TELA_JOGO) {
         UnloadSalaDeAula();
     }

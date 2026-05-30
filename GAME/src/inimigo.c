@@ -24,12 +24,11 @@ void InitInimigos(Inimigo inimigos[], int quantidadeAtiva, int screenWidth, int 
     for (int i = 0; i < MAX_INIMIGOS; i++) {
         if (i < quantidadeAtiva) {
             inimigos[i].ativo = true;
-            // Posição inicial randômica para cada um não nascer grudado
             inimigos[i].x = screenWidth + (i * 300);
             inimigos[i].y = SortearFaixa();
             inimigos[i].velocidade = VelocidadePorDificuldade(dificuldade);
         } else {
-            inimigos[i].ativo = false; // Deixa desativado os que sobrarem
+            inimigos[i].ativo = false;
         }
     }
 }
@@ -39,7 +38,6 @@ void AtualizarInimigos(Inimigo inimigos[], int screenWidth) {
         if (inimigos[i].ativo) {
             inimigos[i].x -= inimigos[i].velocidade;
 
-            // Se o inimigo sair da tela pela esquerda, ele "renasce" na direita
             if (inimigos[i].x < -100) {
                 inimigos[i].x = screenWidth + GetRandomValue(100, 500);
                 inimigos[i].y = SortearFaixa();
@@ -52,7 +50,6 @@ void DesenharInimigos(Inimigo inimigos[], Texture2D texturaFrame) {
     for (int i = 0; i < MAX_INIMIGOS; i++) {
         if (inimigos[i].ativo) {
             
-            // Trava de segurança do Inimigo/ET
             if (texturaFrame.width > 0) {
                 DrawTexturePro(
                     texturaFrame,
@@ -61,7 +58,6 @@ void DesenharInimigos(Inimigo inimigos[], Texture2D texturaFrame) {
                     (Vector2){0, 0}, 0, WHITE
                 );
             } else {
-                // Se falhar, desenha o ET como um quadrado verde
                 DrawRectangle(inimigos[i].x - 32, inimigos[i].y - 32, 64, 64, GREEN);
                 DrawText("ET", inimigos[i].x, inimigos[i].y - 45, 10, WHITE);
             }
@@ -75,9 +71,9 @@ bool ChecarColisaoInimigos(Inimigo inimigos[], Rectangle hitboxAbelha) {
             Rectangle inimigoHitbox = { inimigos[i].x - 20, inimigos[i].y - 20, 40, 40 };
             
             if (CheckCollisionRecs(hitboxAbelha, inimigoHitbox)) {
-                return true; // Bateu em alguém!
+                return true;
             }
         }
     }
-    return false; // Sobreviveu
+    return false;
 }
