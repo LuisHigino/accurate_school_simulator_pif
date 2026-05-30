@@ -83,12 +83,12 @@ int main(void) {
         
         if (telaAtual == TELA_MENU)
         {
-            if (IsKeyPressed(KEY_DOWN)) {
+            if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
                 opcaoSelecionada++;
                 if (opcaoSelecionada > 3) opcaoSelecionada = 0;
                 PlaySound(somMover);
             }
-            if (IsKeyPressed(KEY_UP)) {
+            if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
                 opcaoSelecionada--;
                 if (opcaoSelecionada < 0) opcaoSelecionada = 3;
                 PlaySound(somMover);

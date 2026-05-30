@@ -11,11 +11,11 @@ LDFLAGS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 all: $(EXEC)
 
-$(EXEC):
+$(EXEC): $(SRC)
 	$(CC) $(SRC) $(CFLAGS) -o $(EXEC) $(LDFLAGS)
 
 clean:
 	rm -f $(EXEC)
 
-run: all
-	WAYLAND_DISPLAY="" ./Accurate_School_Simulator
+run: clean all
+	WAYLAND_DISPLAY="" ./$(EXEC)
