@@ -78,6 +78,9 @@ make run
 *(Também é possível usar W/S para movimentação em menus e controle do Gnomo)*
 
 ---
+# Vídeo do Jogo:
+
+[![Vídeo do Jogo no Youtube](https://youtube.com)](https://www.youtube.com/watch?v=Ei_swrwTkoI)
 
 # Explicação das Funções:
 
