@@ -45,7 +45,7 @@ void UpdateProfessora(Professora *prof, float deltaTime) {
             if (prof->timerAcao >= tempoEscrevendo) {
                 prof->timerAcao = 0.0f;
 
-                int dado = GetRandomValue(0, 35);
+                int dado = GetRandomValue(0, 40);
                 int chanceVira = prof->dificuldade * 10; 
 
                 if (dado <= chanceVira) {

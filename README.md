@@ -150,3 +150,60 @@ make run
 * Controla a **Tela Atual** (Menu vs Jogo).
 * No Menu, escuta as setas para navegar entre as opções (Iniciar, Dificuldade, Ranking) com feedback sonoro.
 * No final, redimensiona o Canvas virtual matematicamente para caber na tela física (monitor) do jogador mantendo a proporção.
+
+---
+
+# ✨ Destaques da Implementação (Highlights)
+
+### 1. Efeito "Tela dentro da Tela" (RenderTexture2D)
+
+A mecânica principal do jogo exige que o jogador preste atenção em duas coisas ao mesmo tempo: o minigame do Gnomo no tablet e a professora no ambiente físico.
+Para criar esse efeito visual sem misturar os códigos, utilizamos o conceito de **RenderTexture2D** (Canvas Virtuais).
+
+* Todo o código de `submain.c` (O jogo da abelha) é desenhado em uma "textura invisível" em vez da tela principal.
+* Depois, em `sala_de_aula.c`, essa textura do minigame é colada em cima do desenho do tablet.
+* Quando o jogador aperta "ESPAÇO" para esconder o tablet, nós simplesmente abaixamos a textura do minigame na tela para uma posição que vai além da tela, sem precisar pausar a lógica do Gnomo ou dos ETs e dar o efeito de estar abaixado!
+
+### 2. Oportunidade de Movimento (Estilo FNAF)
+
+A IA da professora foi inspirada nas mecânicas clássicas de *Five Nights at Freddy's*.
+
+* **`PROFE_ESCREVENDO`**: Fica de costas. A cada 6/5/4,5 segundos (dependendo da dificuldade), ela rola um dado de 0 à 40. Esse número é comparado ao nível de dificuldade da professora (entre 1 a 3) vezes 10. Se o numéro rolado for menor ou igual a dificuldade vezes 10, a professora irá entrar no estado de alerta
+* **`PROFE_ALERTA`**: Uma janela curta de tempo (ex: 1 segundo no modo difícil) onde a animação muda, avisando o jogador que ela vai virar.
+* **`PROFE_OLHANDO`**: Se o tablet estiver levantado durante este estado, é *Game Over*.
+Isso garante que a professora não vire em tempos aleatórios mas sim siga um rítimo. Apenas a condição de movimentação é aleatória, fazendo com que até na dificuldade mais difícil, ainda exista a chance dela não virar num intervalo de tempo
+
+---
+
+## 🐛 Desafios e Soluções
+
+Durante o desenvolvimento na linguagem C, lidamos com alguns obstáculos técnicos interessantes:
+
+### 1. O Desafio do Redimensionamento de Janela
+
+**O Problema:** Como permitir que o jogador jogue em tela cheia (FullHD, 4K) ou redimensione a janela com o mouse sem quebrar as coordenadas do jogo, os cliques ou distorcer as pixel-arts?
+**A Solução:** Em `main.c`, criamos uma resolução base virtual (1920x1080). Em vez de desenhar os objetos diretamente no monitor, desenhamos nesse "Canvas". No final de cada frame da `main`, calculamos uma variável `scale` (A menor proporção entre a largura e a altura). Assim, imprimimos o Canvas na tela esticando-o de forma proporcional (Letterboxing), mantendo as barras pretas perfeitas e o jogo intacto, independente do tamanho da janela.
+
+Ah, entendi perfeitamente! Esse é um erro clássico de variáveis de escopo e estado global em C (principalmente quando usamos variáveis `static` ou dividimos o jogo em vários arquivos).
+
+A correção de vocês foi na verdade muito mais focada em **sincronização de estados** e **formatação de dados** do que apenas na leitura do arquivo. Isso é um excelente ponto técnico para destacar!
+
+Aqui está a versão reescrita e muito mais precisa do desafio do Ranking para você substituir no seu `README.md`:
+
+---
+
+### 2. Sincronização de Estados e Formatação no Ranking
+
+**O Problema:** O sistema de ranking apresentava três inconsistências graves na hora de salvar os dados do jogador:
+
+1. A dificuldade registrada não mudava (ficava sempre a mesma);
+2. O tempo salvo era apenas o do minigame do Gnomo e não o da sessão inteira da sala de aula, além de ser exibido em formato bruto (ex: "62" em vez de "1:02");
+3. O número de derrotas (mortes) na abelha era cumulativo, ou seja, não zerava quando o jogador iniciava uma nova partida.
+
+**A Solução:** Fizemos uma varredura para garantir que os módulos do jogo se comunicassem corretamente e limpassem a memória residual:
+
+* **Reset de Memória Estática:** Criamos a função `ReiniciarEstadoSubJogo()` no `submain.c`, garantindo que variáveis como `totalDerrotasAbelha` fossem zeradas rigidamente toda vez que a função `InitSubJogo` fosse chamada.
+* **Comunicação entre Arquivos:** Em vez do minigame isolar suas próprias regras, fizemos ele puxar os dados da `sala_de_aula.c` utilizando getters como `GetDificuldadeSala()` e enviando o tempo de sobrevivência da sessão como um todo, não apenas os 60 segundos do minigame.
+* **Matemática de Formatação:** Para exibir o tempo como um relógio real, utilizamos operações de módulo no `ranking.c` e `main.c`. Em vez de salvar strings complexas, salvamos o total de segundos inteiros e, na hora de mostrar ou escrever no arquivo, fazemos a separação em minutos e segundos com máscara de formatação: `(tempoTotal / 60)` para os minutos e `(tempoTotal % 60)` para os segundos exibidos com `%02d` (garantindo o zero à esquerda, transformando 62s em `1:02`).
+
+---
