@@ -206,7 +206,8 @@ Aqui está a versão reescrita e muito mais precisa do desafio do Ranking para v
 * **Comunicação entre Arquivos:** Em vez do minigame isolar suas próprias regras, fizemos ele puxar os dados da `sala_de_aula.c` utilizando getters como `GetDificuldadeSala()` e enviando o tempo de sobrevivência da sessão como um todo, não apenas os 60 segundos do minigame.
 * **Matemática de Formatação:** Para exibir o tempo como um relógio real, utilizamos operações de módulo no `ranking.c` e `main.c`. Em vez de salvar strings complexas, salvamos o total de segundos inteiros e, na hora de mostrar ou escrever no arquivo, fazemos a separação em minutos e segundos com máscara de formatação: `(tempoTotal / 60)` para os minutos e `(tempoTotal % 60)` para os segundos exibidos com `%02d` (garantindo o zero à esquerda, transformando 62s em `1:02`).
 
-* **Implementação dos sons do jogo:** Na teoria, os sons ja estão funcionando, porém em caso de erro, tente baixar os sons pelo comando abaixo. Esse comando irá permitir que os sons em que escolhemos pro nosso jogo apareçam. 
+### **Implementação dos sons do jogo:** 
+Na teoria, os sons já estão funcionando, porém em caso de erro, tente baixar os sons pelo comando abaixo. Esse comando irá permitir que os sons em que escolhemos pro nosso jogo apareçam. 
 
 ```bash
 sudo apt update && sudo apt install pulseaudio alsa-utils -y
